@@ -1,0 +1,59 @@
+# =============================================================================
+# are-we-up — Monitoring Targets
+# =============================================================================
+# Add your sites and services below. Prometheus picks up changes automatically
+# within 30 seconds — no restart needed.
+#
+# Each target needs:
+#   - targets: list with the URL or host:port to probe
+#   - labels:
+#       name:   human-readable name (shown in dashboards)
+#       module: probe type — http_2xx, http_2xx_no_tls, tcp_connect, or icmp
+#
+# Examples are provided below. Uncomment or add your own.
+# =============================================================================
+
+# --- HTTP/HTTPS Sites ---
+- targets:
+    - https://carbonshift.antonsatt.com
+  labels:
+    name: Carbonshift
+    module: http_2xx
+
+- targets:
+    - https://ssh-radar.antonsatt.com
+  labels:
+    name: SHH-Radar
+    module: http_2xx
+
+- targets:
+    - https://mindspace.antonsatt.com/
+  labels:
+    name: Mindspace
+    module: http_2xx
+
+- targets:
+    - https://antonsatt.com
+  labels:
+    name: Anton-website
+    module: http_2xx
+
+- targets:
+    - https://btcpay.antonsatt.com/
+  labels:
+    name: btcpay-antonsatt
+    module: http_2xx
+
+# --- TCP Services ---
+# - targets:
+#     - your-db-host:5432
+#   labels:
+#     name: postgres
+#     module: tcp_connect
+
+# --- ICMP Ping ---
+# - targets:
+#     - 8.8.8.8
+#   labels:
+#     name: google-dns
+#     module: icmp

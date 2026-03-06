@@ -1,0 +1,86 @@
+global:
+  resolve_timeout: 5m
+  smtp_smarthost: "${SMTP_SMARTHOST}"
+  smtp_from: "${SMTP_FROM}"
+  smtp_auth_username: "${SMTP_AUTH_USERNAME}"
+  smtp_auth_password: "${SMTP_AUTH_PASSWORD}"
+  smtp_require_tls: true
+  slack_api_url: "${SLACK_WEBHOOK_URL}"
+
+# Notification templates
+templates: []
+
+route:
+  receiver: default
+  group_by:
+    - alertname
+    - instance
+  group_wait: 30s
+  group_interval: 5m
+  repeat_interval: 4h
+
+  routes:
+    # Critical alerts go to all configured receivers
+    - match:
+        severity: critical
+      receiver: critical
+      group_wait: 10s
+      repeat_interval: 1h
+
+    # Warning alerts use default receiver
+    - match:
+        severity: warning
+      receiver: default
+
+receivers:
+  # Default receiver — sends to all configured channels
+  - name: default
+    webhook_configs:
+      # Discord (via webhook)
+      - url: "${DISCORD_WEBHOOK_URL}"
+        send_resolved: true
+      # Generic webhook
+      - url: "${GENERIC_WEBHOOK_URL}"
+        send_resolved: true
+    slack_configs:
+      - channel: "${SLACK_CHANNEL}"
+        send_resolved: true
+        title: '{{ if eq .Status "firing" }}🔴{{ else }}🟢{{ end }} {{ .CommonLabels.alertname }}'
+        text: >-
+          {{ range .Alerts }}
+          *{{ .Labels.instance }}*: {{ .Annotations.summary }}
+          {{ .Annotations.description }}
+          {{ end }}
+    email_configs:
+      - to: "${ALERT_EMAIL_TO}"
+        send_resolved: true
+
+  # Critical receiver — same channels but could be extended
+  - name: critical
+    webhook_configs:
+      - url: "${DISCORD_WEBHOOK_URL}"
+        send_resolved: true
+      - url: "${GENERIC_WEBHOOK_URL}"
+        send_resolved: true
+    slack_configs:
+      - channel: "${SLACK_CHANNEL}"
+        send_resolved: true
+        title: '{{ if eq .Status "firing" }}🚨 CRITICAL{{ else }}🟢 RESOLVED{{ end }} {{ .CommonLabels.alertname }}'
+        text: >-
+          {{ range .Alerts }}
+          *{{ .Labels.instance }}*: {{ .Annotations.summary }}
+          {{ .Annotations.description }}
+          {{ end }}
+    email_configs:
+      - to: "${ALERT_EMAIL_TO}"
+        send_resolved: true
+
+# Inhibit lower-severity alerts when critical alert fires for same instance
+inhibit_rules:
+  - source_match:
+      severity: critical
+    target_match:
+      severity: warning
+    equal:
+      - alertname
+      - instance
