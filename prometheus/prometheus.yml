@@ -1,0 +1,102 @@
+global:
+  scrape_interval: 15s
+  evaluation_interval: 15s
+
+rule_files:
+  - alert-rules.yml
+
+alerting:
+  alertmanagers:
+    - static_configs:
+        - targets:
+            - alertmanager:9093
+
+scrape_configs:
+  # --- Prometheus self-monitoring ---
+  - job_name: prometheus
+    static_configs:
+      - targets:
+          - localhost:9090
+
+  # --- Blackbox HTTP/HTTPS probes (from targets.yml) ---
+  - job_name: blackbox-http
+    metrics_path: /probe
+    file_sd_configs:
+      - files:
+          - /etc/prometheus/targets.yml
+        refresh_interval: 30s
+    relabel_configs:
+      # Only scrape targets with http modules
+      - source_labels: [module]
+        regex: http_.*
+        action: keep
+      # Pass the target URL to blackbox exporter
+      - source_labels: [__address__]
+        target_label: __param_target
+      # Use the module label to select the blackbox module
+      - source_labels: [module]
+        target_label: __param_module
+      # Keep the human-readable name
+      - source_labels: [name]
+        target_label: instance
+      # Route probe through blackbox exporter
+      - target_label: __address__
+        replacement: blackbox-exporter:9115
+
+  # --- Blackbox TCP probes (from targets.yml) ---
+  - job_name: blackbox-tcp
+    metrics_path: /probe
+    file_sd_configs:
+      - files:
+          - /etc/prometheus/targets.yml
+        refresh_interval: 30s
+    relabel_configs:
+      - source_labels: [module]
+        regex: tcp_connect
+        action: keep
+      - source_labels: [__address__]
+        target_label: __param_target
+      - source_labels: [module]
+        target_label: __param_module
+      - source_labels: [name]
+        target_label: instance
+      - target_label: __address__
+        replacement: blackbox-exporter:9115
+
+  # --- Blackbox ICMP probes (from targets.yml) ---
+  - job_name: blackbox-icmp
+    metrics_path: /probe
+    file_sd_configs:
+      - files:
+          - /etc/prometheus/targets.yml
+        refresh_interval: 30s
+    relabel_configs:
+      - source_labels: [module]
+        regex: icmp
+        action: keep
+      - source_labels: [__address__]
+        target_label: __param_target
+      - source_labels: [module]
+        target_label: __param_module
+      - source_labels: [name]
+        target_label: instance
+      - target_label: __address__
+        replacement: blackbox-exporter:9115
+
+  # --- Node Exporter (host metrics) ---
+  - job_name: node-exporter
+    static_configs:
+      - targets:
+          - node-exporter:9100
+
+  # --- cAdvisor (container metrics) ---
+  - job_name: cadvisor
+    static_configs:
+      - targets:
+          - cadvisor:8080
+
+  # --- Blackbox Exporter self-metrics ---
+  - job_name: blackbox-exporter
+    static_configs:
+      - targets:
+          - blackbox-exporter:9115

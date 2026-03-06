@@ -1,0 +1,105 @@
+groups:
+  # =========================================================================
+  # Probe / Uptime Alerts
+  # =========================================================================
+  - name: probe-alerts
+    rules:
+      - alert: TargetDown
+        expr: probe_success == 0
+        for: 2m
+        labels:
+          severity: critical
+        annotations:
+          summary: "{{ $labels.instance }} is DOWN"
+          description: "{{ $labels.instance }} has been unreachable for more than 2 minutes."
+
+      - alert: HighResponseTime
+        expr: probe_duration_seconds > 3
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "{{ $labels.instance }} is slow"
+          description: "{{ $labels.instance }} response time is {{ $value | humanizeDuration }} (threshold: 3s)."
+
+      - alert: SSLCertExpiringSoon
+        expr: (probe_ssl_earliest_cert_expiry - time()) / 86400 < 14
+        for: 1h
+        labels:
+          severity: warning
+        annotations:
+          summary: "SSL cert for {{ $labels.instance }} expires in {{ $value | humanize }} days"
+          description: "The SSL certificate for {{ $labels.instance }} will expire in less than 14 days."
+
+      - alert: SSLCertExpiryCritical
+        expr: (probe_ssl_earliest_cert_expiry - time()) / 86400 < 3
+        for: 1h
+        labels:
+          severity: critical
+        annotations:
+          summary: "SSL cert for {{ $labels.instance }} expires in {{ $value | humanize }} days"
+          description: "The SSL certificate for {{ $labels.instance }} will expire in less than 3 days."
+
+      - alert: HTTPStatusCodeChange
+        expr: probe_http_status_code != 200 and probe_success == 1
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "{{ $labels.instance }} returning HTTP {{ $value }}"
+          description: "{{ $labels.instance }} is responding but with status code {{ $value }} instead of 200."
+
+  # =========================================================================
+  # Host / System Alerts (Node Exporter)
+  # =========================================================================
+  - name: system-alerts
+    rules:
+      - alert: HighCPUUsage
+        expr: 100 - (avg by(instance) (rate(node_cpu_seconds_total{mode="idle"}[5m])) * 100) > 85
+        for: 10m
+        labels:
+          severity: warning
+        annotations:
+          summary: "High CPU usage on {{ $labels.instance }}"
+          description: "CPU usage has been above 85% for 10 minutes (current: {{ $value | humanize }}%)."
+
+      - alert: HighMemoryUsage
+        expr: (1 - node_memory_MemAvailable_bytes / node_memory_MemTotal_bytes) * 100 > 85
+        for: 10m
+        labels:
+          severity: warning
+        annotations:
+          summary: "High memory usage on {{ $labels.instance }}"
+          description: "Memory usage is above 85% (current: {{ $value | humanize }}%)."
+
+      - alert: DiskSpaceLow
+        expr: (1 - node_filesystem_avail_bytes{fstype!~"tmpfs|overlay"} / node_filesystem_size_bytes{fstype!~"tmpfs|overlay"}) * 100 > 85
+        for: 10m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Disk space low on {{ $labels.instance }}"
+          description: "Filesystem {{ $labels.mountpoint }} is {{ $value | humanize }}% full."
+
+      - alert: DiskSpaceCritical
+        expr: (1 - node_filesystem_avail_bytes{fstype!~"tmpfs|overlay"} / node_filesystem_size_bytes{fstype!~"tmpfs|overlay"}) * 100 > 95
+        for: 5m
+        labels:
+          severity: critical
+        annotations:
+          summary: "Disk space critical on {{ $labels.instance }}"
+          description: "Filesystem {{ $labels.mountpoint }} is {{ $value | humanize }}% full."
+
+  # =========================================================================
+  # Monitoring Stack Health
+  # =========================================================================
+  - name: monitoring-alerts
+    rules:
+      - alert: PrometheusTargetMissing
+        expr: up == 0
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Prometheus target {{ $labels.instance }} is down"
+          description: "The scrape target {{ $labels.job }}/{{ $labels.instance }} has been down for 5 minutes."
