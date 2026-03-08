@@ -177,36 +177,48 @@ Now only that one IP can reach port 9100. Everyone else is blocked.
 
 ### Step 3 — Tell Prometheus about the remote server
 
-On your monitoring server, edit `prometheus/prometheus.yml` and add the remote server's IP to the node-exporter targets:
+On your monitoring server, add the remote server to `agents.json`:
 
-```yaml
-- job_name: node-exporter
-  static_configs:
-    - targets:
-        - node-exporter:9100          # local machine
-        - 143.47.100.25:9100          # remote server (use your server's IP)
+```json
+[
+  {
+    "targets": ["node-exporter:9100"],
+    "labels": { "name": "local" }
+  },
+  {
+    "targets": ["143.47.100.25:9100"],
+    "labels": { "name": "oracle-server" }
+  }
+]
 ```
 
-Then restart Prometheus:
+Prometheus picks up the change automatically within 30 seconds — no restart needed.
 
-```bash
-docker compose restart prometheus
-```
-
-The remote server should appear in your dashboards within a few seconds.
+The remote server should appear in your dashboards shortly after.
 
 ### Adding more servers
 
-Repeat steps 1-2 on each remote server, then add all of them to the targets list:
+Repeat steps 1-2 on each remote server, then add them to `agents.json`:
 
-```yaml
-- job_name: node-exporter
-  static_configs:
-    - targets:
-        - node-exporter:9100
-        - 143.47.100.25:9100
-        - 164.92.200.50:9100
-        - 129.151.60.10:9100
+```json
+[
+  {
+    "targets": ["node-exporter:9100"],
+    "labels": { "name": "local" }
+  },
+  {
+    "targets": ["143.47.100.25:9100"],
+    "labels": { "name": "oracle-server" }
+  },
+  {
+    "targets": ["164.92.200.50:9100"],
+    "labels": { "name": "digitalocean-1" }
+  },
+  {
+    "targets": ["129.151.60.10:9100"],
+    "labels": { "name": "hetzner-web" }
+  }
+]
 ```
 
 ### If your IP changes
@@ -263,6 +275,7 @@ are-we-up/
 ├── docker-compose.yml           # Stack orchestration
 ├── .env.example                 # Environment variable template
 ├── targets.yml                  # Your monitoring targets
+├── agents.json                  # Remote server agents (Node Exporter)
 ├── prometheus/
 │   ├── prometheus.yml           # Prometheus configuration
 │   └── alert-rules.yml          # Alerting rules
