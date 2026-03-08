@@ -82,6 +82,8 @@ Edit `targets.yml` to add or remove monitoring targets. Prometheus picks up chan
 
 ## Dashboards
 
+![Uptime Overview Dashboard](assets/are-we-up.png)
+
 Three pre-built dashboards are provisioned automatically:
 
 - **Uptime Overview** — all targets at a glance: status, response time, uptime history, SSL cert expiry
