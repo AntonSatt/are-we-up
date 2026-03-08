@@ -41,18 +41,9 @@ Open [http://localhost:3000](http://localhost:3000) for Grafana (default login: 
 
 All ports are configurable via `.env`.
 
-## Configuration Files
-
-There are two files you edit to tell are-we-up what to monitor:
-
-- **`targets.yml`** — websites and services to check (HTTP, TCP, ping). These are monitored from your are-we-up server — no agent needed on the remote side.
-- **`agents.json`** — remote servers where you've installed the [remote agent](#multi-server-monitoring) to get system metrics (CPU, memory, disk). See [Multi-Server Monitoring](#multi-server-monitoring) for setup instructions.
-
-Both files are picked up automatically within 30 seconds — no restart needed.
-
 ## Adding Targets
 
-Edit `targets.yml` to add or remove monitoring targets.
+Edit `targets.yml` to add or remove monitoring targets. Prometheus picks up changes automatically within 30 seconds — no restart needed.
 
 ### HTTP/HTTPS Sites
 
@@ -134,124 +125,6 @@ Configure in `.env`:
 
 Unconfigured channels are silently skipped (they'll fail to deliver but won't block other receivers).
 
-## Multi-Server Monitoring
-
-By default, are-we-up only collects system metrics (CPU, memory, disk) from the machine it runs on. To monitor remote servers (like a VPS on DigitalOcean, Oracle Cloud, Hetzner, etc.), you install a small agent on each one.
-
-> **Note:** This is only needed for system metrics. Uptime/HTTP monitoring works without any agent — just add URLs to `targets.yml`.
-
-### How it works
-
-Your monitoring server needs to pull data from your remote servers. To do this securely, you:
-
-1. Run a small metrics collector (Node Exporter) on the remote server
-2. Open one port (9100) on the remote server, but **only** for your monitoring server's IP — everyone else is blocked
-3. Tell Prometheus where to find the remote server
-
-### What you need
-
-- **Remote server:** Ubuntu 22.04 or 24.04 with Docker installed
-- **Your public IP:** This is the IP of the network where are-we-up runs (your home network if you run it on a Raspberry Pi, for example). Find it by running `curl -s ifconfig.me` on that machine.
-
-### Step 1 — Set up the remote server
-
-Copy the `remote-agent` folder to your remote server and run the setup script:
-
-```bash
-scp -r remote-agent/ user@your-server:~/are-we-up-agent
-
-ssh user@your-server
-cd ~/are-we-up-agent
-bash setup.sh
-```
-
-This starts Node Exporter on port 9100.
-
-### Step 2 — Allow your monitoring server through the firewall
-
-Node Exporter has no authentication, so you need to lock down who can access it. On the remote server, allow **only your IP** to access the metrics port:
-
-```bash
-# Replace with the public IP of the machine running are-we-up
-sudo ufw allow from YOUR_PUBLIC_IP to any port 9100 proto tcp
-```
-
-For example, if your home IP is `80.216.96.11`:
-
-```bash
-sudo ufw allow from 80.216.96.11 to any port 9100 proto tcp
-```
-
-Now only that one IP can reach port 9100. Everyone else is blocked.
-
-### Step 3 — Tell Prometheus about the remote server
-
-On your monitoring server, add the remote server to `agents.json`:
-
-```json
-[
-  {
-    "targets": ["node-exporter:9100"],
-    "labels": { "name": "local" }
-  },
-  {
-    "targets": ["143.47.100.25:9100"],
-    "labels": { "name": "oracle-server" }
-  }
-]
-```
-
-Prometheus picks up the change automatically within 30 seconds — no restart needed.
-
-The remote server should appear in your dashboards shortly after.
-
-### Adding more servers
-
-Repeat steps 1-2 on each remote server, then add them to `agents.json`:
-
-```json
-[
-  {
-    "targets": ["node-exporter:9100"],
-    "labels": { "name": "local" }
-  },
-  {
-    "targets": ["143.47.100.25:9100"],
-    "labels": { "name": "oracle-server" }
-  },
-  {
-    "targets": ["164.92.200.50:9100"],
-    "labels": { "name": "digitalocean-1" }
-  },
-  {
-    "targets": ["129.151.60.10:9100"],
-    "labels": { "name": "hetzner-web" }
-  }
-]
-```
-
-### If your IP changes
-
-Most home internet connections have a dynamic IP that can change from time to time. If it changes, the firewall on your remote servers will block the new IP and metrics will stop flowing.
-
-You'll notice because the dashboards will stop updating for those servers. To fix it, SSH into each remote server and update the firewall rule:
-
-```bash
-# Remove the old rule
-sudo ufw delete allow from OLD_IP to any port 9100 proto tcp
-
-# Add the new one
-sudo ufw allow from NEW_IP to any port 9100 proto tcp
-```
-
-> **Tip:** Some ISPs offer a static IP (one that never changes) for a small monthly fee. If you monitor several servers, it might be worth asking your ISP about it.
-
-### Security
-
-- Node Exporter has no built-in authentication, which is why the firewall rule is important — it ensures only your monitoring server can read the data.
-- The firewall rule is what controls who can access the metrics. Only your monitoring server's IP should be allowed.
-- Never open port 9100 to everyone (`ufw allow 9100` without a `from` IP). Always restrict it to your monitoring server's IP.
-
 ## Configuration Reference
 
 ### Environment Variables
@@ -284,7 +157,6 @@ are-we-up/
 ├── docker-compose.yml           # Stack orchestration
 ├── .env.example                 # Environment variable template
 ├── targets.yml                  # Your monitoring targets
-├── agents.json                  # Remote server agents (Node Exporter)
 ├── prometheus/
 │   ├── prometheus.yml           # Prometheus configuration
 │   └── alert-rules.yml          # Alerting rules
@@ -292,12 +164,9 @@ are-we-up/
 │   └── alertmanager.yml         # Notification routing
 ├── blackbox-exporter/
 │   └── blackbox.yml             # Probe configurations
-├── grafana/
-│   ├── provisioning/            # Auto-provisioning configs
-│   └── dashboards/              # JSON dashboard definitions
-└── remote-agent/
-    ├── docker-compose.yml       # Node Exporter for remote servers
-    └── setup.sh                 # Automated setup script
+└── grafana/
+    ├── provisioning/            # Auto-provisioning configs
+    └── dashboards/              # JSON dashboard definitions
 ```
 
 ## Stopping
