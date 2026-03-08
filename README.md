@@ -41,9 +41,18 @@ Open [http://localhost:3000](http://localhost:3000) for Grafana (default login: 
 
 All ports are configurable via `.env`.
 
+## Configuration Files
+
+There are two files you edit to tell are-we-up what to monitor:
+
+- **`targets.yml`** — websites and services to check (HTTP, TCP, ping). These are monitored from your are-we-up server — no agent needed on the remote side.
+- **`agents.json`** — remote servers where you've installed the [remote agent](#multi-server-monitoring) to get system metrics (CPU, memory, disk). See [Multi-Server Monitoring](#multi-server-monitoring) for setup instructions.
+
+Both files are picked up automatically within 30 seconds — no restart needed.
+
 ## Adding Targets
 
-Edit `targets.yml` to add or remove monitoring targets. Prometheus picks up changes automatically within 30 seconds — no restart needed.
+Edit `targets.yml` to add or remove monitoring targets.
 
 ### HTTP/HTTPS Sites
 
