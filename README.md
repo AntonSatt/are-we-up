@@ -165,11 +165,11 @@ cd ~/are-we-up-agent
 bash setup.sh
 ```
 
-This starts Node Exporter. It only listens on localhost — nobody can reach it from the outside yet.
+This starts Node Exporter on port 9100.
 
 ### Step 2 — Allow your monitoring server through the firewall
 
-On the remote server, allow **only your IP** to access the metrics port:
+Node Exporter has no authentication, so you need to lock down who can access it. On the remote server, allow **only your IP** to access the metrics port:
 
 ```bash
 # Replace with the public IP of the machine running are-we-up
@@ -249,7 +249,7 @@ sudo ufw allow from NEW_IP to any port 9100 proto tcp
 ### Security
 
 - Node Exporter has no built-in authentication, which is why the firewall rule is important — it ensures only your monitoring server can read the data.
-- The docker-compose binds to `127.0.0.1:9100` so the port is not directly exposed. The firewall rule is what lets your monitoring server through.
+- The firewall rule is what controls who can access the metrics. Only your monitoring server's IP should be allowed.
 - Never open port 9100 to everyone (`ufw allow 9100` without a `from` IP). Always restrict it to your monitoring server's IP.
 
 ## Configuration Reference
