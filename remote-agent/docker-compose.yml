@@ -4,7 +4,7 @@ services:
     container_name: are-we-up-node-exporter
     restart: unless-stopped
     ports:
-      - "127.0.0.1:9100:9100"
+      - "9100:9100"
     volumes:
       - /proc:/host/proc:ro
       - /sys:/host/sys:ro
