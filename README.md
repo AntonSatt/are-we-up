@@ -86,11 +86,13 @@ Edit `targets.yml` to add or remove monitoring targets. Prometheus picks up chan
 
 ## Dashboards
 
-Three pre-built dashboards are provisioned automatically:
+Five pre-built dashboards are provisioned automatically:
 
 - **Uptime Overview** — all targets at a glance: status, response time, uptime history, SSL cert expiry
 - **Site Detail** — per-site deep-dive with response time breakdown (DNS, TCP, TLS, processing, transfer), status code history, SSL countdown
-- **System Overview** — CPU, memory, disk, network, container metrics from Node Exporter and cAdvisor
+- **System Overview** — CPU, memory, disk, network from Node Exporter
+- **Docker Containers** — per-container CPU, memory, network, disk I/O with summary table
+- **Stack Health** — Prometheus self-monitoring: scrape targets, memory, storage, query performance, alert status
 
 ## Alerting
 
