@@ -1,5 +1,9 @@
 # are-we-up
 
+<p align="center">
+  <img src="assets/are-we-up.png" alt="Uptime Overview Dashboard" width="600">
+</p>
+
 Self-hostable uptime monitoring stack. Define your targets in one YAML file, run `docker compose up`, and get dashboards with alerting out of the box.
 
 Built on Prometheus + Grafana + Alertmanager + Blackbox Exporter.
@@ -81,8 +85,6 @@ Edit `targets.yml` to add or remove monitoring targets. Prometheus picks up chan
 | `icmp`           | ICMP ping (requires container privileges)|
 
 ## Dashboards
-
-![Uptime Overview Dashboard](assets/are-we-up.png)
 
 Three pre-built dashboards are provisioned automatically:
 
