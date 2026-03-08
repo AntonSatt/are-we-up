@@ -127,22 +127,109 @@ Unconfigured channels are silently skipped (they'll fail to deliver but won't bl
 
 ## Multi-Server Monitoring
 
-To monitor a remote machine's system metrics:
+By default, are-we-up only collects system metrics (CPU, memory, disk) from the machine it runs on. To monitor remote servers (like a VPS on DigitalOcean, Oracle Cloud, Hetzner, etc.), you install a small agent on each one.
 
-1. Run Node Exporter on the remote host (as a container or native service)
-2. Add it as a static target in `prometheus/prometheus.yml`:
+> **Note:** This is only needed for system metrics. Uptime/HTTP monitoring works without any agent — just add URLs to `targets.yml`.
+
+### How it works
+
+Your monitoring server needs to pull data from your remote servers. To do this securely, you:
+
+1. Run a small metrics collector (Node Exporter) on the remote server
+2. Open one port (9100) on the remote server, but **only** for your monitoring server's IP — everyone else is blocked
+3. Tell Prometheus where to find the remote server
+
+### What you need
+
+- **Remote server:** Ubuntu 22.04 or 24.04 with Docker installed
+- **Your public IP:** This is the IP of the network where are-we-up runs (your home network if you run it on a Raspberry Pi, for example). Find it by running `curl -s ifconfig.me` on that machine.
+
+### Step 1 — Set up the remote server
+
+Copy the `remote-agent` folder to your remote server and run the setup script:
+
+```bash
+scp -r remote-agent/ user@your-server:~/are-we-up-agent
+
+ssh user@your-server
+cd ~/are-we-up-agent
+bash setup.sh
+```
+
+This starts Node Exporter. It only listens on localhost — nobody can reach it from the outside yet.
+
+### Step 2 — Allow your monitoring server through the firewall
+
+On the remote server, allow **only your IP** to access the metrics port:
+
+```bash
+# Replace with the public IP of the machine running are-we-up
+sudo ufw allow from YOUR_PUBLIC_IP to any port 9100 proto tcp
+```
+
+For example, if your home IP is `80.216.96.11`:
+
+```bash
+sudo ufw allow from 80.216.96.11 to any port 9100 proto tcp
+```
+
+Now only that one IP can reach port 9100. Everyone else is blocked.
+
+### Step 3 — Tell Prometheus about the remote server
+
+On your monitoring server, edit `prometheus/prometheus.yml` and add the remote server's IP to the node-exporter targets:
+
+```yaml
+- job_name: node-exporter
+  static_configs:
+    - targets:
+        - node-exporter:9100          # local machine
+        - 143.47.100.25:9100          # remote server (use your server's IP)
+```
+
+Then restart Prometheus:
+
+```bash
+docker compose restart prometheus
+```
+
+The remote server should appear in your dashboards within a few seconds.
+
+### Adding more servers
+
+Repeat steps 1-2 on each remote server, then add all of them to the targets list:
 
 ```yaml
 - job_name: node-exporter
   static_configs:
     - targets:
         - node-exporter:9100
-        - remote-host:9100
-      labels:
-        environment: production
+        - 143.47.100.25:9100
+        - 164.92.200.50:9100
+        - 129.151.60.10:9100
 ```
 
-3. Restart Prometheus: `docker compose restart prometheus`
+### If your IP changes
+
+Most home internet connections have a dynamic IP that can change from time to time. If it changes, the firewall on your remote servers will block the new IP and metrics will stop flowing.
+
+You'll notice because the dashboards will stop updating for those servers. To fix it, SSH into each remote server and update the firewall rule:
+
+```bash
+# Remove the old rule
+sudo ufw delete allow from OLD_IP to any port 9100 proto tcp
+
+# Add the new one
+sudo ufw allow from NEW_IP to any port 9100 proto tcp
+```
+
+> **Tip:** Some ISPs offer a static IP (one that never changes) for a small monthly fee. If you monitor several servers, it might be worth asking your ISP about it.
+
+### Security
+
+- Node Exporter has no built-in authentication, which is why the firewall rule is important — it ensures only your monitoring server can read the data.
+- The docker-compose binds to `127.0.0.1:9100` so the port is not directly exposed. The firewall rule is what lets your monitoring server through.
+- Never open port 9100 to everyone (`ufw allow 9100` without a `from` IP). Always restrict it to your monitoring server's IP.
 
 ## Configuration Reference
 
@@ -183,9 +270,12 @@ are-we-up/
 │   └── alertmanager.yml         # Notification routing
 ├── blackbox-exporter/
 │   └── blackbox.yml             # Probe configurations
-└── grafana/
-    ├── provisioning/            # Auto-provisioning configs
-    └── dashboards/              # JSON dashboard definitions
+├── grafana/
+│   ├── provisioning/            # Auto-provisioning configs
+│   └── dashboards/              # JSON dashboard definitions
+└── remote-agent/
+    ├── docker-compose.yml       # Node Exporter for remote servers
+    └── setup.sh                 # Automated setup script
 ```
 
 ## Stopping
