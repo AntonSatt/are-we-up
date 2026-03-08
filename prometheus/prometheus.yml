@@ -83,12 +83,11 @@ scrape_configs:
       - target_label: __address__
         replacement: blackbox-exporter:9115
 
-  # --- Node Exporter (host metrics, from agents.json) ---
+  # --- Node Exporter (host metrics) ---
   - job_name: node-exporter
-    file_sd_configs:
-      - files:
-          - /etc/prometheus/agents.json
-        refresh_interval: 30s
+    static_configs:
+      - targets:
+          - node-exporter:9100
 
   # --- cAdvisor (container metrics) ---
   - job_name: cadvisor
