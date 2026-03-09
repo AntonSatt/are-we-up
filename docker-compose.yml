@@ -43,16 +43,31 @@ services:
     ports:
       - "${ALERTMANAGER_PORT:-9093}:9093"
     volumes:
-      - ./alertmanager/alertmanager.yml:/etc/alertmanager/alertmanager.yml:ro
+      - ./alertmanager/alertmanager.yml.tmpl:/etc/alertmanager/alertmanager.yml.tmpl:ro
+      - ./alertmanager/entrypoint.sh:/entrypoint.sh:ro
+    entrypoint: ["/entrypoint.sh"]
+    command:
+      - "--config.file=/etc/alertmanager/alertmanager.yml"
     environment:
       - SLACK_WEBHOOK_URL=${SLACK_WEBHOOK_URL:-}
-      - DISCORD_WEBHOOK_URL=${DISCORD_WEBHOOK_URL:-}
+      - SLACK_CHANNEL=${SLACK_CHANNEL:-}
       - SMTP_SMARTHOST=${SMTP_SMARTHOST:-}
       - SMTP_FROM=${SMTP_FROM:-}
       - SMTP_AUTH_USERNAME=${SMTP_AUTH_USERNAME:-}
       - SMTP_AUTH_PASSWORD=${SMTP_AUTH_PASSWORD:-}
       - ALERT_EMAIL_TO=${ALERT_EMAIL_TO:-}
       - GENERIC_WEBHOOK_URL=${GENERIC_WEBHOOK_URL:-}
+    depends_on:
+      - discord-bridge
+    networks:
+      - monitoring
+
+  discord-bridge:
+    image: benjojo/alertmanager-discord:latest
+    container_name: are-we-up-discord-bridge
+    restart: unless-stopped
+    environment:
+      - DISCORD_WEBHOOK=${DISCORD_WEBHOOK_URL}
     networks:
       - monitoring
 
