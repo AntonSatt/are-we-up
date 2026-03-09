@@ -12,7 +12,7 @@ Built on Prometheus + Grafana + Alertmanager + Blackbox Exporter.
 
 ```bash
 # 1. Clone the repo
-git clone https://github.com/youruser/are-we-up.git
+git clone https://github.com/AntonSatt/are-we-up.git
 cd are-we-up
 
 # 2. Create your .env file (optional — only needed for alerting)
@@ -23,7 +23,7 @@ cp .env.example .env
 # Edit targets.yml — add the sites and services you want to monitor
 
 # 4. Start the stack
-docker compose up -d
+docker compose up -d --build
 ```
 
 Open [http://localhost:3000](http://localhost:3000) for Grafana (default login: `admin`/`admin`).
@@ -134,16 +134,8 @@ To add other notification channels, edit `alertmanager/alertmanager.yml.tmpl` an
 | `PROMETHEUS_RETENTION`| 30d                 | How long to keep metrics       |
 | `GRAFANA_ADMIN_USER`  | admin               | Grafana admin username         |
 | `GRAFANA_ADMIN_PASSWORD`| admin             | Grafana admin password         |
-| `SLACK_WEBHOOK_URL`   | —                   | Slack incoming webhook URL     |
-| `SLACK_CHANNEL`       | #alerts             | Slack channel for alerts       |
 | `DISCORD_WEBHOOK_URL` | —                   | Discord webhook URL            |
 | `DISCORD_MENTION_USER_ID` | —               | Discord user ID to ping on firing alerts |
-| `SMTP_SMARTHOST`      | smtp.gmail.com:587  | SMTP server host:port          |
-| `SMTP_FROM`           | alerts@example.com  | Email sender address           |
-| `SMTP_AUTH_USERNAME`  | —                   | SMTP username                  |
-| `SMTP_AUTH_PASSWORD`  | —                   | SMTP password                  |
-| `ALERT_EMAIL_TO`      | you@example.com     | Alert recipient email          |
-| `GENERIC_WEBHOOK_URL` | —                   | Generic webhook endpoint       |
 
 ### File Structure
 
