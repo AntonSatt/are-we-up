@@ -115,15 +115,9 @@ Alerts are pre-configured and fire when:
 
 Configure in `.env`:
 
-**Discord** — set `DISCORD_WEBHOOK_URL`
+**Discord** — set `DISCORD_WEBHOOK_URL`. Alerts are sent via a built-in bridge service that translates Alertmanager alerts into Discord embeds. Optionally set `DISCORD_MENTION_USER_ID` to get pinged on firing alerts (enable Developer Mode in Discord, right-click your name, Copy User ID).
 
-**Slack** — set `SLACK_WEBHOOK_URL` and optionally `SLACK_CHANNEL`
-
-**Email** — set `SMTP_SMARTHOST`, `SMTP_FROM`, `SMTP_AUTH_USERNAME`, `SMTP_AUTH_PASSWORD`, and `ALERT_EMAIL_TO`
-
-**Generic Webhook** — set `GENERIC_WEBHOOK_URL` (receives Alertmanager webhook payloads)
-
-Unconfigured channels are silently skipped (they'll fail to deliver but won't block other receivers).
+To add other notification channels, edit `alertmanager/alertmanager.yml.tmpl` and add the corresponding receivers (Slack, email, generic webhook, etc). See the [Alertmanager documentation](https://prometheus.io/docs/alerting/latest/configuration/) for receiver configuration.
 
 ## Configuration Reference
 
@@ -143,6 +137,7 @@ Unconfigured channels are silently skipped (they'll fail to deliver but won't bl
 | `SLACK_WEBHOOK_URL`   | —                   | Slack incoming webhook URL     |
 | `SLACK_CHANNEL`       | #alerts             | Slack channel for alerts       |
 | `DISCORD_WEBHOOK_URL` | —                   | Discord webhook URL            |
+| `DISCORD_MENTION_USER_ID` | —               | Discord user ID to ping on firing alerts |
 | `SMTP_SMARTHOST`      | smtp.gmail.com:587  | SMTP server host:port          |
 | `SMTP_FROM`           | alerts@example.com  | Email sender address           |
 | `SMTP_AUTH_USERNAME`  | —                   | SMTP username                  |
@@ -161,7 +156,11 @@ are-we-up/
 │   ├── prometheus.yml           # Prometheus configuration
 │   └── alert-rules.yml          # Alerting rules
 ├── alertmanager/
-│   └── alertmanager.yml         # Notification routing
+│   ├── alertmanager.yml.tmpl    # Notification routing template
+│   └── entrypoint.sh            # Config preprocessor
+├── discord-bridge/
+│   ├── bridge.py                # Alertmanager-to-Discord translator
+│   └── Dockerfile
 ├── blackbox-exporter/
 │   └── blackbox.yml             # Probe configurations
 └── grafana/

@@ -68,6 +68,7 @@ services:
     restart: unless-stopped
     environment:
       - DISCORD_WEBHOOK=${DISCORD_WEBHOOK_URL}
+      - DISCORD_MENTION_USER_ID=${DISCORD_MENTION_USER_ID:-}
     networks:
       - monitoring
 

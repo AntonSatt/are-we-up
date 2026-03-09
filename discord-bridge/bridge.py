@@ -8,6 +8,7 @@ import urllib.request
 from http.server import HTTPServer, BaseHTTPRequestHandler
 
 DISCORD_WEBHOOK = os.environ.get("DISCORD_WEBHOOK", "")
+DISCORD_MENTION_USER_ID = os.environ.get("DISCORD_MENTION_USER_ID", "")
 
 
 class Handler(BaseHTTPRequestHandler):
@@ -43,7 +44,9 @@ class Handler(BaseHTTPRequestHandler):
             })
 
         if embeds:
-            payload = json.dumps({"embeds": embeds}).encode()
+            has_firing = any(a.get("status") == "firing" for a in body.get("alerts", []))
+            mention = f"<@{DISCORD_MENTION_USER_ID}>" if DISCORD_MENTION_USER_ID and has_firing else ""
+            payload = json.dumps({"content": mention, "embeds": embeds}).encode()
             req = urllib.request.Request(
                 DISCORD_WEBHOOK,
                 data=payload,
