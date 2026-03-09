@@ -36,8 +36,8 @@ receivers:
   # Default receiver — sends to all configured channels
   - name: default
     webhook_configs:
-      # Discord (via webhook)
-      - url: "${DISCORD_WEBHOOK_URL}"
+      # Discord (via bridge that translates to Discord embed format)
+      - url: "http://discord-bridge:9094"
         send_resolved: true
       # Generic webhook
       - url: "${GENERIC_WEBHOOK_URL}"
@@ -58,7 +58,7 @@ receivers:
   # Critical receiver — same channels but could be extended
   - name: critical
     webhook_configs:
-      - url: "${DISCORD_WEBHOOK_URL}"
+      - url: "http://discord-bridge:9094"
         send_resolved: true
       - url: "${GENERIC_WEBHOOK_URL}"
         send_resolved: true
