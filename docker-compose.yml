@@ -45,7 +45,7 @@ services:
     volumes:
       - ./alertmanager/alertmanager.yml.tmpl:/etc/alertmanager/alertmanager.yml.tmpl:ro
       - ./alertmanager/entrypoint.sh:/entrypoint.sh:ro
-    entrypoint: ["/entrypoint.sh"]
+    entrypoint: ["/bin/sh", "/entrypoint.sh"]
     command:
       - "--config.file=/etc/alertmanager/alertmanager.yml"
     environment:
@@ -63,7 +63,7 @@ services:
       - monitoring
 
   discord-bridge:
-    image: benjojo/alertmanager-discord:latest
+    build: ./discord-bridge
     container_name: are-we-up-discord-bridge
     restart: unless-stopped
     environment:
