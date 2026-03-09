@@ -3,6 +3,7 @@
 import json
 import os
 import sys
+import urllib.error
 import urllib.request
 from http.server import HTTPServer, BaseHTTPRequestHandler
 
@@ -46,11 +47,18 @@ class Handler(BaseHTTPRequestHandler):
             req = urllib.request.Request(
                 DISCORD_WEBHOOK,
                 data=payload,
-                headers={"Content-Type": "application/json"},
+                headers={
+                    "Content-Type": "application/json",
+                    "User-Agent": "are-we-up/1.0",
+                },
                 method="POST",
             )
             try:
-                urllib.request.urlopen(req)
+                resp = urllib.request.urlopen(req)
+                print(f"Discord webhook sent OK: {resp.status}", file=sys.stderr)
+            except urllib.error.HTTPError as e:
+                body = e.read().decode()
+                print(f"Discord webhook error: {e.code} {body}", file=sys.stderr)
             except Exception as e:
                 print(f"Discord webhook error: {e}", file=sys.stderr)
 
