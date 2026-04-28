@@ -9,9 +9,185 @@
   "links": [],
   "panels": [
     {
+      "title": "SLA Table — per Target",
+      "type": "table",
+      "description": "Per-target uptime across windows, SLO target, MET/MISSED status, and error budget remaining (minutes) over the 30-day window.",
+      "gridPos": { "h": 9, "w": 24, "x": 0, "y": 0 },
+      "datasource": { "type": "prometheus", "uid": "PBFA97CFB590B2093" },
+      "targets": [
+        {
+          "expr": "probe:success_ratio:1d",
+          "format": "table",
+          "instant": true,
+          "legendFormat": "",
+          "refId": "ratio_1d"
+        },
+        {
+          "expr": "probe:success_ratio:7d",
+          "format": "table",
+          "instant": true,
+          "legendFormat": "",
+          "refId": "ratio_7d"
+        },
+        {
+          "expr": "probe:success_ratio:30d",
+          "format": "table",
+          "instant": true,
+          "legendFormat": "",
+          "refId": "ratio_30d"
+        },
+        {
+          "expr": "slo:target_ratio",
+          "format": "table",
+          "instant": true,
+          "legendFormat": "",
+          "refId": "slo_target"
+        },
+        {
+          "expr": "(probe:success_ratio:30d >= slo:target_ratio)",
+          "format": "table",
+          "instant": true,
+          "legendFormat": "",
+          "refId": "met"
+        },
+        {
+          "expr": "probe:error_budget_remaining_minutes:30d",
+          "format": "table",
+          "instant": true,
+          "legendFormat": "",
+          "refId": "budget_min"
+        }
+      ],
+      "transformations": [
+        {
+          "id": "seriesToColumns",
+          "options": { "byField": "instance" }
+        },
+        {
+          "id": "organize",
+          "options": {
+            "excludeByName": {
+              "Time 1": true,
+              "Time 2": true,
+              "Time 3": true,
+              "Time 4": true,
+              "Time 5": true,
+              "Time 6": true,
+              "__name__ 1": true,
+              "__name__ 2": true,
+              "__name__ 3": true,
+              "__name__ 4": true,
+              "__name__ 5": true,
+              "__name__ 6": true,
+              "job 1": true,
+              "job 2": true,
+              "job 3": true,
+              "job 4": true,
+              "job 5": true,
+              "job 6": true,
+              "module 1": true,
+              "module 2": true,
+              "module 3": true,
+              "module 4": true,
+              "module 5": true,
+              "module 6": true,
+              "name 1": true,
+              "name 2": true,
+              "name 3": true,
+              "name 4": true,
+              "name 5": true,
+              "name 6": true,
+              "slo 1": true,
+              "slo 2": true,
+              "slo 3": true,
+              "slo 4": true,
+              "slo 5": true,
+              "slo 6": true
+            },
+            "renameByName": {
+              "instance": "Target",
+              "Value #ratio_1d": "24h",
+              "Value #ratio_7d": "7d",
+              "Value #ratio_30d": "30d",
+              "Value #slo_target": "SLO",
+              "Value #met": "Met?",
+              "Value #budget_min": "Budget (min)"
+            }
+          }
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {},
+        "overrides": [
+          {
+            "matcher": { "id": "byName", "options": "24h" },
+            "properties": [
+              { "id": "unit", "value": "percentunit" },
+              { "id": "decimals", "value": 4 }
+            ]
+          },
+          {
+            "matcher": { "id": "byName", "options": "7d" },
+            "properties": [
+              { "id": "unit", "value": "percentunit" },
+              { "id": "decimals", "value": 4 }
+            ]
+          },
+          {
+            "matcher": { "id": "byName", "options": "30d" },
+            "properties": [
+              { "id": "unit", "value": "percentunit" },
+              { "id": "decimals", "value": 4 }
+            ]
+          },
+          {
+            "matcher": { "id": "byName", "options": "SLO" },
+            "properties": [
+              { "id": "unit", "value": "percentunit" },
+              { "id": "decimals", "value": 2 }
+            ]
+          },
+          {
+            "matcher": { "id": "byName", "options": "Met?" },
+            "properties": [
+              {
+                "id": "mappings",
+                "value": [
+                  { "type": "value", "options": { "1": { "text": "MET", "color": "green" }, "0": { "text": "MISSED", "color": "red" } } }
+                ]
+              },
+              { "id": "custom.cellOptions", "value": { "type": "color-text" } }
+            ]
+          },
+          {
+            "matcher": { "id": "byName", "options": "Budget (min)" },
+            "properties": [
+              { "id": "unit", "value": "m" },
+              { "id": "decimals", "value": 1 },
+              {
+                "id": "thresholds",
+                "value": {
+                  "mode": "absolute",
+                  "steps": [
+                    { "color": "red", "value": null },
+                    { "color": "green", "value": 0 }
+                  ]
+                }
+              },
+              { "id": "custom.cellOptions", "value": { "type": "color-text" } }
+            ]
+          }
+        ]
+      },
+      "options": {
+        "showHeader": true,
+        "sortBy": [{ "displayName": "30d", "desc": false }]
+      }
+    },
+    {
       "title": "Targets Up / Down",
       "type": "stat",
-      "gridPos": { "h": 4, "w": 6, "x": 0, "y": 0 },
+      "gridPos": { "h": 4, "w": 6, "x": 0, "y": 9 },
       "datasource": { "type": "prometheus", "uid": "PBFA97CFB590B2093" },
       "targets": [
         {
@@ -43,7 +219,7 @@
     {
       "title": "Targets Down",
       "type": "stat",
-      "gridPos": { "h": 4, "w": 6, "x": 6, "y": 0 },
+      "gridPos": { "h": 4, "w": 6, "x": 6, "y": 9 },
       "datasource": { "type": "prometheus", "uid": "PBFA97CFB590B2093" },
       "targets": [
         {
@@ -76,7 +252,7 @@
     {
       "title": "Average Response Time",
       "type": "stat",
-      "gridPos": { "h": 4, "w": 6, "x": 12, "y": 0 },
+      "gridPos": { "h": 4, "w": 6, "x": 12, "y": 9 },
       "datasource": { "type": "prometheus", "uid": "PBFA97CFB590B2093" },
       "targets": [
         {
@@ -111,7 +287,7 @@
     {
       "title": "SSL Certs Expiring < 14 Days",
       "type": "stat",
-      "gridPos": { "h": 4, "w": 6, "x": 18, "y": 0 },
+      "gridPos": { "h": 4, "w": 6, "x": 18, "y": 9 },
       "datasource": { "type": "prometheus", "uid": "PBFA97CFB590B2093" },
       "targets": [
         {
@@ -144,7 +320,7 @@
     {
       "title": "All Targets — Status",
       "type": "table",
-      "gridPos": { "h": 10, "w": 24, "x": 0, "y": 4 },
+      "gridPos": { "h": 10, "w": 24, "x": 0, "y": 13 },
       "datasource": { "type": "prometheus", "uid": "PBFA97CFB590B2093" },
       "targets": [
         {
@@ -267,7 +443,7 @@
     {
       "title": "Uptime (probe_success) over time",
       "type": "timeseries",
-      "gridPos": { "h": 8, "w": 24, "x": 0, "y": 14 },
+      "gridPos": { "h": 8, "w": 24, "x": 0, "y": 23 },
       "datasource": { "type": "prometheus", "uid": "PBFA97CFB590B2093" },
       "targets": [
         {
@@ -309,7 +485,7 @@
     {
       "title": "Response Time over time",
       "type": "timeseries",
-      "gridPos": { "h": 8, "w": 24, "x": 0, "y": 22 },
+      "gridPos": { "h": 8, "w": 24, "x": 0, "y": 31 },
       "datasource": { "type": "prometheus", "uid": "PBFA97CFB590B2093" },
       "targets": [
         {

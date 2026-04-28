@@ -23,7 +23,7 @@
       "title": "SLA — Last 24h",
       "type": "stat",
       "description": "Average uptime across all targets over the last 24 hours. ≥99.9% = three nines (≤1.4 min/day). ≥99.99% = four nines (≤8.6 sec/day).",
-      "gridPos": { "h": 5, "w": 6, "x": 0, "y": 0 },
+      "gridPos": { "h": 5, "w": 6, "x": 0, "y": 9 },
       "datasource": { "type": "prometheus", "uid": "PBFA97CFB590B2093" },
       "targets": [
         {
@@ -60,7 +60,7 @@
       "title": "SLA — Last 7d",
       "type": "stat",
       "description": "Average uptime across all targets over the last 7 days. ≥99.9% = three nines (≤10 min/week). ≥99.99% = four nines (≤1 min/week).",
-      "gridPos": { "h": 5, "w": 6, "x": 6, "y": 0 },
+      "gridPos": { "h": 5, "w": 6, "x": 6, "y": 9 },
       "datasource": { "type": "prometheus", "uid": "PBFA97CFB590B2093" },
       "targets": [
         {
@@ -97,7 +97,7 @@
       "title": "SLA — Last 30d",
       "type": "stat",
       "description": "Average uptime across all targets over the last 30 days. ≥99.9% = three nines (≤43 min/month). ≥99.99% = four nines (≤4.3 min/month). On a fresh install this number is warm-up dependent until 30 days of data exist.",
-      "gridPos": { "h": 5, "w": 6, "x": 12, "y": 0 },
+      "gridPos": { "h": 5, "w": 6, "x": 12, "y": 9 },
       "datasource": { "type": "prometheus", "uid": "PBFA97CFB590B2093" },
       "targets": [
         {
@@ -134,7 +134,7 @@
       "title": "% of Targets Meeting SLO",
       "type": "stat",
       "description": "Share of targets whose 30-day uptime meets or exceeds their SLO target. Targets without an `slo` label use the 99.9% default.",
-      "gridPos": { "h": 5, "w": 6, "x": 18, "y": 0 },
+      "gridPos": { "h": 5, "w": 6, "x": 18, "y": 9 },
       "datasource": { "type": "prometheus", "uid": "PBFA97CFB590B2093" },
       "targets": [
         {
@@ -173,7 +173,7 @@
       "title": "Error Budget Remaining (30d)",
       "type": "bargauge",
       "description": "Per-target error budget remaining over a 30-day window. 100% = full budget, 0% = exhausted, negative = over budget. Budget is computed against each target's SLO label (default 99.9%).",
-      "gridPos": { "h": 7, "w": 24, "x": 0, "y": 5 },
+      "gridPos": { "h": 7, "w": 24, "x": 0, "y": 14 },
       "datasource": { "type": "prometheus", "uid": "PBFA97CFB590B2093" },
       "targets": [
         {
@@ -213,7 +213,7 @@
       "title": "Status Timeline",
       "type": "state-timeline",
       "description": "Per-target up/down state over the dashboard time range. Use the time picker (top right) to widen or narrow.",
-      "gridPos": { "h": 8, "w": 24, "x": 0, "y": 12 },
+      "gridPos": { "h": 8, "w": 24, "x": 0, "y": 21 },
       "datasource": { "type": "prometheus", "uid": "PBFA97CFB590B2093" },
       "targets": [
         {
@@ -250,7 +250,7 @@
       "title": "SLA Table — per Target",
       "type": "table",
       "description": "Per-target uptime across windows, SLO target, MET/MISSED status, and error budget remaining (minutes) over the 30-day window.",
-      "gridPos": { "h": 9, "w": 24, "x": 0, "y": 20 },
+      "gridPos": { "h": 9, "w": 24, "x": 0, "y": 0 },
       "datasource": { "type": "prometheus", "uid": "PBFA97CFB590B2093" },
       "targets": [
         {
