@@ -103,3 +103,39 @@ groups:
         annotations:
           summary: "Prometheus target {{ $labels.instance }} is down"
           description: "The scrape target {{ $labels.job }}/{{ $labels.instance }} has been down for 5 minutes."
+
+  # =========================================================================
+  # SLO target ratio per probe
+  # Driven by the optional `slo` label in targets.yml. Default is 99.9%.
+  # Supported values: "99", "99.9" (default), "99.95", "99.99".
+  # `or` keeps the LHS for matching series, so overrides come first and the
+  # unrestricted fallback comes last.
+  # =========================================================================
+  - name: sla-slo-target
+    interval: 1m
+    rules:
+      - record: slo:target_ratio
+        expr: |
+          (probe_success{slo="99"}      * 0 + 0.99)
+          or (probe_success{slo="99.95"} * 0 + 0.9995)
+          or (probe_success{slo="99.99"} * 0 + 0.9999)
+          or (probe_success              * 0 + 0.999)
+
+  # =========================================================================
+  # SLA recording rules — windowed uptime ratios + error budget
+  # =========================================================================
+  - name: sla-uptime
+    interval: 1m
+    rules:
+      - record: probe:success_ratio:1d
+        expr: avg_over_time(probe_success[24h])
+      - record: probe:success_ratio:7d
+        expr: avg_over_time(probe_success[7d])
+      - record: probe:success_ratio:30d
+        expr: avg_over_time(probe_success[30d])
+      # Fraction of error budget remaining: 1.0 = full, 0 = exhausted, <0 = over
+      - record: probe:error_budget_remaining_ratio:30d
+        expr: (probe:success_ratio:30d - slo:target_ratio) / (1 - slo:target_ratio)
+      # Minutes of error budget remaining for a 30d window (43200 min total)
+      - record: probe:error_budget_remaining_minutes:30d
+        expr: (probe:success_ratio:30d - slo:target_ratio) * 30 * 24 * 60

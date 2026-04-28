@@ -10,6 +10,11 @@
 #       name:   human-readable name (shown in dashboards)
 #       module: probe type — http_2xx, http_2xx_no_tls, tcp_connect, or icmp
 #
+# Optional labels:
+#       slo:    SLO target percentage. Supported values:
+#                 "99", "99.9" (default if omitted), "99.95", "99.99".
+#               Surfaces in the SLA / Reliability dashboard.
+#
 # Examples are provided below. Uncomment or add your own.
 # =============================================================================
 
@@ -37,6 +42,7 @@
   labels:
     name: Anton-website
     module: http_2xx
+    slo: "99.95"
 
 - targets:
     - https://btcpay.antonsatt.com/
