@@ -84,11 +84,27 @@ Edit `targets.yml` to add or remove monitoring targets. Prometheus picks up chan
 | `tcp_connect`    | TCP connection check                     |
 | `icmp`           | ICMP ping (requires container privileges)|
 
+### SLO Targets (optional)
+
+Add an `slo` label to any target to set its SLO percentage. The **SLA / Reliability** dashboard uses it to compute per-target error budget and a MET/MISSED badge.
+
+```yaml
+- targets:
+    - https://your-site.com
+  labels:
+    name: your-site
+    module: http_2xx
+    slo: "99.95"
+```
+
+Supported values: `"99"`, `"99.9"` (default if omitted), `"99.95"`, `"99.99"`. Other values silently fall back to the default.
+
 ## Dashboards
 
-Five pre-built dashboards are provisioned automatically:
+Six pre-built dashboards are provisioned automatically:
 
 - **Uptime Overview** — all targets at a glance: status, response time, uptime history, SSL cert expiry
+- **SLA / Reliability** — uptime % across 24h/7d/30d windows, error budget remaining (per-target), status timeline, downtime summary
 - **Site Detail** — per-site deep-dive with response time breakdown (DNS, TCP, TLS, processing, transfer), status code history, SSL countdown
 - **System Overview** — CPU, memory, disk, network from Node Exporter
 - **Docker Containers** — per-container CPU, memory, network, disk I/O with summary table

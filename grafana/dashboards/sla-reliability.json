@@ -1,0 +1,523 @@
+{
+  "annotations": {
+    "list": []
+  },
+  "editable": true,
+  "fiscalYearStartMonth": 0,
+  "graphTooltip": 1,
+  "id": null,
+  "links": [
+    {
+      "asDropdown": false,
+      "icon": "external link",
+      "includeVars": false,
+      "keepTime": true,
+      "tags": ["are-we-up"],
+      "targetBlank": false,
+      "title": "Other dashboards",
+      "type": "dashboards"
+    }
+  ],
+  "panels": [
+    {
+      "title": "SLA — Last 24h",
+      "type": "stat",
+      "description": "Average uptime across all targets over the last 24 hours. ≥99.9% = three nines (≤1.4 min/day). ≥99.99% = four nines (≤8.6 sec/day).",
+      "gridPos": { "h": 5, "w": 6, "x": 0, "y": 0 },
+      "datasource": { "type": "prometheus", "uid": "PBFA97CFB590B2093" },
+      "targets": [
+        {
+          "expr": "avg(probe:success_ratio:1d)",
+          "legendFormat": "24h SLA",
+          "refId": "A"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "percentunit",
+          "decimals": 4,
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              { "color": "red", "value": null },
+              { "color": "orange", "value": 0.99 },
+              { "color": "green", "value": 0.999 }
+            ]
+          },
+          "color": { "mode": "thresholds" }
+        },
+        "overrides": []
+      },
+      "options": {
+        "reduceOptions": { "calcs": ["lastNotNull"], "fields": "", "values": false },
+        "textMode": "auto",
+        "colorMode": "value",
+        "graphMode": "none",
+        "justifyMode": "center"
+      }
+    },
+    {
+      "title": "SLA — Last 7d",
+      "type": "stat",
+      "description": "Average uptime across all targets over the last 7 days. ≥99.9% = three nines (≤10 min/week). ≥99.99% = four nines (≤1 min/week).",
+      "gridPos": { "h": 5, "w": 6, "x": 6, "y": 0 },
+      "datasource": { "type": "prometheus", "uid": "PBFA97CFB590B2093" },
+      "targets": [
+        {
+          "expr": "avg(probe:success_ratio:7d)",
+          "legendFormat": "7d SLA",
+          "refId": "A"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "percentunit",
+          "decimals": 4,
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              { "color": "red", "value": null },
+              { "color": "orange", "value": 0.99 },
+              { "color": "green", "value": 0.999 }
+            ]
+          },
+          "color": { "mode": "thresholds" }
+        },
+        "overrides": []
+      },
+      "options": {
+        "reduceOptions": { "calcs": ["lastNotNull"], "fields": "", "values": false },
+        "textMode": "auto",
+        "colorMode": "value",
+        "graphMode": "none",
+        "justifyMode": "center"
+      }
+    },
+    {
+      "title": "SLA — Last 30d",
+      "type": "stat",
+      "description": "Average uptime across all targets over the last 30 days. ≥99.9% = three nines (≤43 min/month). ≥99.99% = four nines (≤4.3 min/month). On a fresh install this number is warm-up dependent until 30 days of data exist.",
+      "gridPos": { "h": 5, "w": 6, "x": 12, "y": 0 },
+      "datasource": { "type": "prometheus", "uid": "PBFA97CFB590B2093" },
+      "targets": [
+        {
+          "expr": "avg(probe:success_ratio:30d)",
+          "legendFormat": "30d SLA",
+          "refId": "A"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "percentunit",
+          "decimals": 4,
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              { "color": "red", "value": null },
+              { "color": "orange", "value": 0.99 },
+              { "color": "green", "value": 0.999 }
+            ]
+          },
+          "color": { "mode": "thresholds" }
+        },
+        "overrides": []
+      },
+      "options": {
+        "reduceOptions": { "calcs": ["lastNotNull"], "fields": "", "values": false },
+        "textMode": "auto",
+        "colorMode": "value",
+        "graphMode": "none",
+        "justifyMode": "center"
+      }
+    },
+    {
+      "title": "% of Targets Meeting SLO",
+      "type": "stat",
+      "description": "Share of targets whose 30-day uptime meets or exceeds their SLO target. Targets without an `slo` label use the 99.9% default.",
+      "gridPos": { "h": 5, "w": 6, "x": 18, "y": 0 },
+      "datasource": { "type": "prometheus", "uid": "PBFA97CFB590B2093" },
+      "targets": [
+        {
+          "expr": "count(probe:success_ratio:30d >= slo:target_ratio) / count(probe:success_ratio:30d) OR vector(0)",
+          "legendFormat": "Meeting SLO",
+          "refId": "A"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "percentunit",
+          "decimals": 0,
+          "min": 0,
+          "max": 1,
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              { "color": "red", "value": null },
+              { "color": "orange", "value": 0.8 },
+              { "color": "green", "value": 1 }
+            ]
+          },
+          "color": { "mode": "thresholds" }
+        },
+        "overrides": []
+      },
+      "options": {
+        "reduceOptions": { "calcs": ["lastNotNull"], "fields": "", "values": false },
+        "textMode": "auto",
+        "colorMode": "background",
+        "graphMode": "none",
+        "justifyMode": "center"
+      }
+    },
+    {
+      "title": "Error Budget Remaining (30d)",
+      "type": "bargauge",
+      "description": "Per-target error budget remaining over a 30-day window. 100% = full budget, 0% = exhausted, negative = over budget. Budget is computed against each target's SLO label (default 99.9%).",
+      "gridPos": { "h": 7, "w": 24, "x": 0, "y": 5 },
+      "datasource": { "type": "prometheus", "uid": "PBFA97CFB590B2093" },
+      "targets": [
+        {
+          "expr": "probe:error_budget_remaining_ratio:30d",
+          "legendFormat": "{{ instance }}",
+          "refId": "A"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "percentunit",
+          "decimals": 1,
+          "min": -1,
+          "max": 1,
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              { "color": "red", "value": null },
+              { "color": "orange", "value": 0.25 },
+              { "color": "yellow", "value": 0.5 },
+              { "color": "green", "value": 0.75 }
+            ]
+          },
+          "color": { "mode": "thresholds" }
+        },
+        "overrides": []
+      },
+      "options": {
+        "displayMode": "gradient",
+        "orientation": "horizontal",
+        "showUnfilled": true,
+        "valueMode": "color",
+        "reduceOptions": { "calcs": ["lastNotNull"], "fields": "", "values": false }
+      }
+    },
+    {
+      "title": "Status Timeline",
+      "type": "state-timeline",
+      "description": "Per-target up/down state over the dashboard time range. Use the time picker (top right) to widen or narrow.",
+      "gridPos": { "h": 8, "w": 24, "x": 0, "y": 12 },
+      "datasource": { "type": "prometheus", "uid": "PBFA97CFB590B2093" },
+      "targets": [
+        {
+          "expr": "probe_success",
+          "legendFormat": "{{ instance }}",
+          "refId": "A"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "mappings": [
+            { "type": "value", "options": { "0": { "text": "DOWN", "color": "red" }, "1": { "text": "UP", "color": "green" } } }
+          ],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              { "color": "red", "value": null },
+              { "color": "green", "value": 1 }
+            ]
+          },
+          "color": { "mode": "thresholds" }
+        },
+        "overrides": []
+      },
+      "options": {
+        "showValue": "never",
+        "mergeValues": true,
+        "alignValue": "center",
+        "rowHeight": 0.9,
+        "legend": { "displayMode": "list", "placement": "bottom", "showLegend": false }
+      }
+    },
+    {
+      "title": "SLA Table — per Target",
+      "type": "table",
+      "description": "Per-target uptime across windows, SLO target, MET/MISSED status, and error budget remaining (minutes) over the 30-day window.",
+      "gridPos": { "h": 9, "w": 24, "x": 0, "y": 20 },
+      "datasource": { "type": "prometheus", "uid": "PBFA97CFB590B2093" },
+      "targets": [
+        {
+          "expr": "probe:success_ratio:1d",
+          "format": "table",
+          "instant": true,
+          "legendFormat": "",
+          "refId": "ratio_1d"
+        },
+        {
+          "expr": "probe:success_ratio:7d",
+          "format": "table",
+          "instant": true,
+          "legendFormat": "",
+          "refId": "ratio_7d"
+        },
+        {
+          "expr": "probe:success_ratio:30d",
+          "format": "table",
+          "instant": true,
+          "legendFormat": "",
+          "refId": "ratio_30d"
+        },
+        {
+          "expr": "slo:target_ratio",
+          "format": "table",
+          "instant": true,
+          "legendFormat": "",
+          "refId": "slo_target"
+        },
+        {
+          "expr": "(probe:success_ratio:30d >= slo:target_ratio)",
+          "format": "table",
+          "instant": true,
+          "legendFormat": "",
+          "refId": "met"
+        },
+        {
+          "expr": "probe:error_budget_remaining_minutes:30d",
+          "format": "table",
+          "instant": true,
+          "legendFormat": "",
+          "refId": "budget_min"
+        }
+      ],
+      "transformations": [
+        {
+          "id": "seriesToColumns",
+          "options": { "byField": "instance" }
+        },
+        {
+          "id": "organize",
+          "options": {
+            "excludeByName": {
+              "Time 1": true,
+              "Time 2": true,
+              "Time 3": true,
+              "Time 4": true,
+              "Time 5": true,
+              "Time 6": true,
+              "__name__ 1": true,
+              "__name__ 2": true,
+              "__name__ 3": true,
+              "__name__ 4": true,
+              "__name__ 5": true,
+              "__name__ 6": true,
+              "job 1": true,
+              "job 2": true,
+              "job 3": true,
+              "job 4": true,
+              "job 5": true,
+              "job 6": true,
+              "module 1": true,
+              "module 2": true,
+              "module 3": true,
+              "module 4": true,
+              "module 5": true,
+              "module 6": true,
+              "name 1": true,
+              "name 2": true,
+              "name 3": true,
+              "name 4": true,
+              "name 5": true,
+              "name 6": true,
+              "slo 1": true,
+              "slo 2": true,
+              "slo 3": true,
+              "slo 4": true,
+              "slo 5": true,
+              "slo 6": true
+            },
+            "renameByName": {
+              "instance": "Target",
+              "Value #ratio_1d": "24h",
+              "Value #ratio_7d": "7d",
+              "Value #ratio_30d": "30d",
+              "Value #slo_target": "SLO",
+              "Value #met": "Met?",
+              "Value #budget_min": "Budget (min)"
+            }
+          }
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {},
+        "overrides": [
+          {
+            "matcher": { "id": "byName", "options": "24h" },
+            "properties": [
+              { "id": "unit", "value": "percentunit" },
+              { "id": "decimals", "value": 4 }
+            ]
+          },
+          {
+            "matcher": { "id": "byName", "options": "7d" },
+            "properties": [
+              { "id": "unit", "value": "percentunit" },
+              { "id": "decimals", "value": 4 }
+            ]
+          },
+          {
+            "matcher": { "id": "byName", "options": "30d" },
+            "properties": [
+              { "id": "unit", "value": "percentunit" },
+              { "id": "decimals", "value": 4 }
+            ]
+          },
+          {
+            "matcher": { "id": "byName", "options": "SLO" },
+            "properties": [
+              { "id": "unit", "value": "percentunit" },
+              { "id": "decimals", "value": 2 }
+            ]
+          },
+          {
+            "matcher": { "id": "byName", "options": "Met?" },
+            "properties": [
+              {
+                "id": "mappings",
+                "value": [
+                  { "type": "value", "options": { "1": { "text": "MET", "color": "green" }, "0": { "text": "MISSED", "color": "red" } } }
+                ]
+              },
+              { "id": "custom.cellOptions", "value": { "type": "color-text" } }
+            ]
+          },
+          {
+            "matcher": { "id": "byName", "options": "Budget (min)" },
+            "properties": [
+              { "id": "unit", "value": "m" },
+              { "id": "decimals", "value": 1 },
+              {
+                "id": "thresholds",
+                "value": {
+                  "mode": "absolute",
+                  "steps": [
+                    { "color": "red", "value": null },
+                    { "color": "green", "value": 0 }
+                  ]
+                }
+              },
+              { "id": "custom.cellOptions", "value": { "type": "color-text" } }
+            ]
+          }
+        ]
+      },
+      "options": {
+        "showHeader": true,
+        "sortBy": [{ "displayName": "30d", "desc": false }]
+      }
+    },
+    {
+      "title": "Downtime Summary (7d)",
+      "type": "table",
+      "description": "Per-target downtime over the last 7 days, derived from probe_success. Number of state changes is a rough incident count (each incident = down + recovery = 2 changes).",
+      "gridPos": { "h": 8, "w": 24, "x": 0, "y": 29 },
+      "datasource": { "type": "prometheus", "uid": "PBFA97CFB590B2093" },
+      "targets": [
+        {
+          "expr": "(1 - probe:success_ratio:7d) * 7 * 24 * 60",
+          "format": "table",
+          "instant": true,
+          "legendFormat": "",
+          "refId": "downtime_min"
+        },
+        {
+          "expr": "changes(probe_success[7d]) / 2",
+          "format": "table",
+          "instant": true,
+          "legendFormat": "",
+          "refId": "incidents"
+        }
+      ],
+      "transformations": [
+        {
+          "id": "seriesToColumns",
+          "options": { "byField": "instance" }
+        },
+        {
+          "id": "organize",
+          "options": {
+            "excludeByName": {
+              "Time 1": true,
+              "Time 2": true,
+              "__name__ 1": true,
+              "__name__ 2": true,
+              "job 1": true,
+              "job 2": true,
+              "module 1": true,
+              "module 2": true,
+              "name 1": true,
+              "name 2": true,
+              "slo 1": true,
+              "slo 2": true
+            },
+            "renameByName": {
+              "instance": "Target",
+              "Value #downtime_min": "Downtime (min)",
+              "Value #incidents": "Incidents"
+            }
+          }
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {},
+        "overrides": [
+          {
+            "matcher": { "id": "byName", "options": "Downtime (min)" },
+            "properties": [
+              { "id": "unit", "value": "m" },
+              { "id": "decimals", "value": 1 },
+              {
+                "id": "thresholds",
+                "value": {
+                  "mode": "absolute",
+                  "steps": [
+                    { "color": "green", "value": null },
+                    { "color": "orange", "value": 1 },
+                    { "color": "red", "value": 10 }
+                  ]
+                }
+              },
+              { "id": "custom.cellOptions", "value": { "type": "color-text" } }
+            ]
+          },
+          {
+            "matcher": { "id": "byName", "options": "Incidents" },
+            "properties": [
+              { "id": "decimals", "value": 0 }
+            ]
+          }
+        ]
+      },
+      "options": {
+        "showHeader": true,
+        "sortBy": [{ "displayName": "Downtime (min)", "desc": true }]
+      }
+    }
+  ],
+  "refresh": "1m",
+  "schemaVersion": 39,
+  "tags": ["are-we-up", "sla"],
+  "templating": { "list": [] },
+  "time": { "from": "now-7d", "to": "now" },
+  "timepicker": {},
+  "timezone": "",
+  "title": "SLA / Reliability",
+  "uid": "are-we-up-sla",
+  "version": 1
+}
