@@ -12,7 +12,7 @@ services:
       - prometheus-data:/prometheus
     command:
       - "--config.file=/etc/prometheus/prometheus.yml"
-      - "--storage.tsdb.retention.time=${PROMETHEUS_RETENTION:-30d}"
+      - "--storage.tsdb.retention.time=${PROMETHEUS_RETENTION:-400d}"
       - "--web.enable-lifecycle"
     networks:
       - monitoring

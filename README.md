@@ -104,7 +104,7 @@ Supported values: `"99"`, `"99.9"` (default if omitted), `"99.95"`, `"99.99"`. O
 Six pre-built dashboards are provisioned automatically:
 
 - **Uptime Overview** — all targets at a glance: status, response time, uptime history, SSL cert expiry
-- **SLA / Reliability** — uptime % across 24h/7d/30d windows, error budget remaining (per-target), status timeline, downtime summary
+- **SLA / Reliability** — uptime % across 24h/30d/1y windows, error budget remaining (per-target), status timeline, downtime summary
 - **Site Detail** — per-site deep-dive with response time breakdown (DNS, TCP, TLS, processing, transfer), status code history, SSL countdown
 - **System Overview** — CPU, memory, disk, network from Node Exporter
 - **Docker Containers** — per-container CPU, memory, network, disk I/O with summary table
@@ -147,7 +147,7 @@ To add other notification channels, edit `alertmanager/alertmanager.yml.tmpl` an
 | `BLACKBOX_PORT`       | 9115                | Blackbox Exporter port         |
 | `NODE_EXPORTER_PORT`  | 9100                | Node Exporter port             |
 | `CADVISOR_PORT`       | 8080                | cAdvisor port                  |
-| `PROMETHEUS_RETENTION`| 30d                 | How long to keep metrics       |
+| `PROMETHEUS_RETENTION`| 400d                | How long to keep metrics (≥365d required for the 1y SLA) |
 | `GRAFANA_ADMIN_USER`  | admin               | Grafana admin username         |
 | `GRAFANA_ADMIN_PASSWORD`| admin             | Grafana admin password         |
 | `DISCORD_WEBHOOK_URL` | —                   | Discord webhook URL            |

@@ -23,11 +23,11 @@
           "refId": "ratio_1d"
         },
         {
-          "expr": "probe:success_ratio:7d",
+          "expr": "probe:success_ratio:365d",
           "format": "table",
           "instant": true,
           "legendFormat": "",
-          "refId": "ratio_7d"
+          "refId": "ratio_365d"
         },
         {
           "expr": "probe:success_ratio:30d",
@@ -107,7 +107,7 @@
             "renameByName": {
               "instance": "Target",
               "Value #ratio_1d": "24h",
-              "Value #ratio_7d": "7d",
+              "Value #ratio_365d": "1y",
               "Value #ratio_30d": "30d",
               "Value #slo_target": "SLO",
               "Value #met": "Met?",
@@ -127,7 +127,7 @@
             ]
           },
           {
-            "matcher": { "id": "byName", "options": "7d" },
+            "matcher": { "id": "byName", "options": "1y" },
             "properties": [
               { "id": "unit", "value": "percentunit" },
               { "id": "decimals", "value": 4 }
