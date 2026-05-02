@@ -133,12 +133,12 @@
     {
       "title": "% of Targets Meeting SLO",
       "type": "stat",
-      "description": "Share of targets whose 30-day uptime meets or exceeds their SLO target. Targets without an `slo` label use the 99.9% default.",
+      "description": "Share of targets whose 1-year uptime meets or exceeds their SLO target. Targets without an `slo` label use the 99.9% default.",
       "gridPos": { "h": 5, "w": 6, "x": 18, "y": 9 },
       "datasource": { "type": "prometheus", "uid": "PBFA97CFB590B2093" },
       "targets": [
         {
-          "expr": "count(probe:success_ratio:30d >= slo:target_ratio) / count(probe:success_ratio:30d) OR vector(0)",
+          "expr": "count(probe:success_ratio:365d >= bool slo:target_ratio == 1) / count(probe:success_ratio:365d) OR vector(0)",
           "legendFormat": "Meeting SLO",
           "refId": "A"
         }
@@ -170,14 +170,14 @@
       }
     },
     {
-      "title": "Error Budget Remaining (30d)",
+      "title": "Error Budget Remaining (1y)",
       "type": "bargauge",
-      "description": "Per-target error budget remaining over a 30-day window. 100% = full budget, 0% = exhausted, negative = over budget. Budget is computed against each target's SLO label (default 99.9%).",
+      "description": "Per-target error budget remaining over a 1-year window. 100% = full budget, 0% = exhausted, negative = over budget. Budget is computed against each target's SLO label (default 99.9%).",
       "gridPos": { "h": 7, "w": 24, "x": 0, "y": 14 },
       "datasource": { "type": "prometheus", "uid": "PBFA97CFB590B2093" },
       "targets": [
         {
-          "expr": "probe:error_budget_remaining_ratio:30d",
+          "expr": "probe:error_budget_remaining_ratio:365d",
           "legendFormat": "{{ instance }}",
           "refId": "A"
         }
@@ -249,7 +249,7 @@
     {
       "title": "SLA Table — per Target",
       "type": "table",
-      "description": "Per-target uptime across windows, SLO target, MET/MISSED status, and error budget remaining (minutes) over the 30-day window.",
+      "description": "Per-target uptime across windows, SLO target, MET/MISSED status, and error budget remaining (minutes) over the 1-year window.",
       "gridPos": { "h": 9, "w": 24, "x": 0, "y": 0 },
       "datasource": { "type": "prometheus", "uid": "PBFA97CFB590B2093" },
       "targets": [
@@ -261,18 +261,18 @@
           "refId": "ratio_1d"
         },
         {
-          "expr": "probe:success_ratio:365d",
-          "format": "table",
-          "instant": true,
-          "legendFormat": "",
-          "refId": "ratio_365d"
-        },
-        {
           "expr": "probe:success_ratio:30d",
           "format": "table",
           "instant": true,
           "legendFormat": "",
           "refId": "ratio_30d"
+        },
+        {
+          "expr": "probe:success_ratio:365d",
+          "format": "table",
+          "instant": true,
+          "legendFormat": "",
+          "refId": "ratio_365d"
         },
         {
           "expr": "slo:target_ratio",
@@ -282,14 +282,14 @@
           "refId": "slo_target"
         },
         {
-          "expr": "(probe:success_ratio:30d >= slo:target_ratio)",
+          "expr": "(probe:success_ratio:365d >= bool slo:target_ratio)",
           "format": "table",
           "instant": true,
           "legendFormat": "",
           "refId": "met"
         },
         {
-          "expr": "probe:error_budget_remaining_minutes:30d",
+          "expr": "probe:error_budget_remaining_minutes:365d",
           "format": "table",
           "instant": true,
           "legendFormat": "",

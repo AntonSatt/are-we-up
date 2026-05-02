@@ -134,8 +134,8 @@ groups:
       - record: probe:success_ratio:365d
         expr: avg_over_time(probe_success[365d])
       # Fraction of error budget remaining: 1.0 = full, 0 = exhausted, <0 = over
-      - record: probe:error_budget_remaining_ratio:30d
-        expr: (probe:success_ratio:30d - slo:target_ratio) / (1 - slo:target_ratio)
-      # Minutes of error budget remaining for a 30d window (43200 min total)
-      - record: probe:error_budget_remaining_minutes:30d
-        expr: (probe:success_ratio:30d - slo:target_ratio) * 30 * 24 * 60
+      - record: probe:error_budget_remaining_ratio:365d
+        expr: (probe:success_ratio:365d - slo:target_ratio) / (1 - slo:target_ratio)
+      # Minutes of error budget remaining for a 365d window (525600 min total)
+      - record: probe:error_budget_remaining_minutes:365d
+        expr: (probe:success_ratio:365d - slo:target_ratio) * 365 * 24 * 60
