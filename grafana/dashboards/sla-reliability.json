@@ -57,15 +57,15 @@
       }
     },
     {
-      "title": "SLA — Last 7d",
+      "title": "SLA — Last 1y",
       "type": "stat",
-      "description": "Average uptime across all targets over the last 7 days. ≥99.9% = three nines (≤10 min/week). ≥99.99% = four nines (≤1 min/week).",
+      "description": "Average uptime across all targets over the last 365 days. ≥99.9% = three nines (≤8.76 h/year). ≥99.99% = four nines (≤52.6 min/year). On a fresh install this number is warm-up dependent until 365 days of data exist.",
       "gridPos": { "h": 5, "w": 6, "x": 6, "y": 9 },
       "datasource": { "type": "prometheus", "uid": "PBFA97CFB590B2093" },
       "targets": [
         {
-          "expr": "avg(probe:success_ratio:7d)",
-          "legendFormat": "7d SLA",
+          "expr": "avg(probe:success_ratio:365d)",
+          "legendFormat": "1y SLA",
           "refId": "A"
         }
       ],
@@ -261,11 +261,11 @@
           "refId": "ratio_1d"
         },
         {
-          "expr": "probe:success_ratio:7d",
+          "expr": "probe:success_ratio:365d",
           "format": "table",
           "instant": true,
           "legendFormat": "",
-          "refId": "ratio_7d"
+          "refId": "ratio_365d"
         },
         {
           "expr": "probe:success_ratio:30d",
@@ -345,7 +345,7 @@
             "renameByName": {
               "instance": "Target",
               "Value #ratio_1d": "24h",
-              "Value #ratio_7d": "7d",
+              "Value #ratio_365d": "1y",
               "Value #ratio_30d": "30d",
               "Value #slo_target": "SLO",
               "Value #met": "Met?",
@@ -365,7 +365,7 @@
             ]
           },
           {
-            "matcher": { "id": "byName", "options": "7d" },
+            "matcher": { "id": "byName", "options": "1y" },
             "properties": [
               { "id": "unit", "value": "percentunit" },
               { "id": "decimals", "value": 4 }
@@ -423,21 +423,21 @@
       }
     },
     {
-      "title": "Downtime Summary (7d)",
+      "title": "Downtime Summary (1y)",
       "type": "table",
-      "description": "Per-target downtime over the last 7 days, derived from probe_success. Number of state changes is a rough incident count (each incident = down + recovery = 2 changes).",
+      "description": "Per-target downtime over the last 365 days, derived from probe_success. Number of state changes is a rough incident count (each incident = down + recovery = 2 changes). Warm-up dependent until 365 days of data exist.",
       "gridPos": { "h": 8, "w": 24, "x": 0, "y": 29 },
       "datasource": { "type": "prometheus", "uid": "PBFA97CFB590B2093" },
       "targets": [
         {
-          "expr": "(1 - probe:success_ratio:7d) * 7 * 24 * 60",
+          "expr": "(1 - probe:success_ratio:365d) * 365 * 24 * 60",
           "format": "table",
           "instant": true,
           "legendFormat": "",
           "refId": "downtime_min"
         },
         {
-          "expr": "changes(probe_success[7d]) / 2",
+          "expr": "changes(probe_success[365d]) / 2",
           "format": "table",
           "instant": true,
           "legendFormat": "",
@@ -488,8 +488,8 @@
                   "mode": "absolute",
                   "steps": [
                     { "color": "green", "value": null },
-                    { "color": "orange", "value": 1 },
-                    { "color": "red", "value": 10 }
+                    { "color": "orange", "value": 60 },
+                    { "color": "red", "value": 600 }
                   ]
                 }
               },
@@ -514,7 +514,7 @@
   "schemaVersion": 39,
   "tags": ["are-we-up", "sla"],
   "templating": { "list": [] },
-  "time": { "from": "now-7d", "to": "now" },
+  "time": { "from": "now-30d", "to": "now" },
   "timepicker": {},
   "timezone": "",
   "title": "SLA / Reliability",
