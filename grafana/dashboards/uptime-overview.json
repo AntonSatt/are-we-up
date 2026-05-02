@@ -11,7 +11,7 @@
     {
       "title": "SLA Table — per Target",
       "type": "table",
-      "description": "Per-target uptime across windows, SLO target, MET/MISSED status, and error budget remaining (minutes) over the 30-day window.",
+      "description": "Per-target uptime across windows, SLO target, MET/MISSED status, and error budget remaining (minutes) over the 1-year window.",
       "gridPos": { "h": 9, "w": 24, "x": 0, "y": 0 },
       "datasource": { "type": "prometheus", "uid": "PBFA97CFB590B2093" },
       "targets": [
@@ -23,18 +23,18 @@
           "refId": "ratio_1d"
         },
         {
-          "expr": "probe:success_ratio:365d",
-          "format": "table",
-          "instant": true,
-          "legendFormat": "",
-          "refId": "ratio_365d"
-        },
-        {
           "expr": "probe:success_ratio:30d",
           "format": "table",
           "instant": true,
           "legendFormat": "",
           "refId": "ratio_30d"
+        },
+        {
+          "expr": "probe:success_ratio:365d",
+          "format": "table",
+          "instant": true,
+          "legendFormat": "",
+          "refId": "ratio_365d"
         },
         {
           "expr": "slo:target_ratio",
@@ -44,14 +44,14 @@
           "refId": "slo_target"
         },
         {
-          "expr": "(probe:success_ratio:30d >= slo:target_ratio)",
+          "expr": "(probe:success_ratio:365d >= bool slo:target_ratio)",
           "format": "table",
           "instant": true,
           "legendFormat": "",
           "refId": "met"
         },
         {
-          "expr": "probe:error_budget_remaining_minutes:30d",
+          "expr": "probe:error_budget_remaining_minutes:365d",
           "format": "table",
           "instant": true,
           "legendFormat": "",
