@@ -6,9 +6,10 @@ templates: []
 
 route:
   receiver: default
+  # One message per alert type, so an outage that takes several targets down
+  # arrives as one notification instead of one per target.
   group_by:
     - alertname
-    - instance
   group_wait: 30s
   group_interval: 5m
   repeat_interval: 4h
@@ -37,12 +38,22 @@ receivers:
       - url: "http://discord-bridge:9094"
         send_resolved: true
 
-# Inhibit lower-severity alerts when critical alert fires for same instance
 inhibit_rules:
-  - source_match:
-      severity: critical
-    target_match:
-      severity: warning
+  # A target that is down is also slow; only report the outage.
+  - source_matchers:
+      - alertname = TargetDown
+    target_matchers:
+      - alertname = HighResponseTime
     equal:
-      - alertname
       - instance
+
+  # A critical alert covers the warnings for the same instance and mountpoint,
+  # e.g. DiskSpaceCritical over DiskSpaceLow. Alerts without a mountpoint
+  # label match each other on it.
+  - source_matchers:
+      - severity = critical
+    target_matchers:
+      - severity = warning
+    equal:
+      - instance
+      - mountpoint

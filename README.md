@@ -129,10 +129,10 @@ Alerts are pre-configured and fire when:
 
 | Alert                  | Condition                                  | Severity |
 |------------------------|--------------------------------------------|----------|
-| TargetDown             | Probe fails for 2 minutes                  | critical |
+| TargetDown             | Probe fails for 2 minutes                  | critical (`page` tier), else warning |
 | HighResponseTime       | Response > 3s for 5 minutes                | warning  |
 | SSLCertExpiringSoon    | SSL cert expires in < 14 days              | warning  |
-| SSLCertExpiryCritical  | SSL cert expires in < 3 days               | critical |
+| SSLCertExpiryCritical  | SSL cert expires in < 3 days (`page` tier) | critical |
 | HTTPStatusCodeChange   | Non-200 response for 5 minutes             | warning  |
 | HighCPUUsage           | CPU > 85% for 10 minutes                   | warning  |
 | HighMemoryUsage        | Memory > 85% for 10 minutes                | warning  |
@@ -140,11 +140,35 @@ Alerts are pre-configured and fire when:
 | DiskSpaceCritical      | Disk > 95% full for 5 minutes              | critical |
 | PrometheusTargetMissing| Scrape target down for 5 minutes           | warning  |
 
+Alerts about the same thing are grouped into one notification (one message
+for every target that is down, not one per target), a down target does not
+also report as slow, and a critical alert covers the matching warning (e.g.
+`DiskSpaceCritical` over `DiskSpaceLow`).
+
+### Alert Tiers
+
+Not every target deserves a ping. Each target has a tier, keyed on its `name`:
+
+| Tier     | Probe alerts                        | Set in                   |
+|----------|-------------------------------------|--------------------------|
+| `page`   | critical: Discord with a mention    | `alert_tier` rule        |
+| (none)   | warning: Discord without a mention  | default, nothing to set  |
+| `off`    | none, dashboards only               | `alert_tier` rule        |
+
+Tiers live in `alert_tier` recording rules at the top of
+`prometheus/alert-rules.yml` instead of as target labels, because changing a
+target's labels starts new series and resets its SLA history. Tiers for
+private targets go in `rules.d/*.yml` (gitignored like `targets.d/`):
+
+```bash
+cp rules.d/private.yml.example rules.d/private.yml   # then edit
+```
+
 ### Notification Channels
 
 Configure in `.env`:
 
-**Discord** — set `DISCORD_WEBHOOK_URL`. Alerts are sent via a built-in bridge service that translates Alertmanager alerts into Discord embeds. Optionally set `DISCORD_MENTION_USER_ID` to get pinged on firing alerts (enable Developer Mode in Discord, right-click your name, Copy User ID).
+**Discord** — set `DISCORD_WEBHOOK_URL`. Alerts are sent via a built-in bridge service that translates Alertmanager alerts into Discord embeds. Optionally set `DISCORD_MENTION_USER_ID` to get pinged on firing critical alerts (enable Developer Mode in Discord, right-click your name, Copy User ID).
 
 To add other notification channels, edit `alertmanager/alertmanager.yml.tmpl` and add the corresponding receivers (Slack, email, generic webhook, etc). See the [Alertmanager documentation](https://prometheus.io/docs/alerting/latest/configuration/) for receiver configuration.
 
@@ -164,7 +188,7 @@ To add other notification channels, edit `alertmanager/alertmanager.yml.tmpl` an
 | `GRAFANA_ADMIN_USER`  | admin               | Grafana admin username         |
 | `GRAFANA_ADMIN_PASSWORD`| admin             | Grafana admin password         |
 | `DISCORD_WEBHOOK_URL` | —                   | Discord webhook URL            |
-| `DISCORD_MENTION_USER_ID` | —               | Discord user ID to ping on firing alerts |
+| `DISCORD_MENTION_USER_ID` | —               | Discord user ID to ping on firing critical alerts |
 
 ### File Structure
 
@@ -174,6 +198,7 @@ are-we-up/
 ├── .env.example                 # Environment variable template
 ├── targets.yml                  # Your monitoring targets (public)
 ├── targets.d/                   # Private targets, gitignored (*.yml)
+├── rules.d/                     # Private alert tiers, gitignored (*.yml)
 ├── prometheus/
 │   ├── prometheus.yml           # Prometheus configuration
 │   └── alert-rules.yml          # Alerting rules

@@ -9,6 +9,29 @@ from http.server import HTTPServer, BaseHTTPRequestHandler
 
 DISCORD_WEBHOOK = os.environ.get("DISCORD_WEBHOOK", "")
 DISCORD_MENTION_USER_ID = os.environ.get("DISCORD_MENTION_USER_ID", "")
+# Discord rejects a message with more than 10 embeds.
+MAX_EMBEDS = 10
+
+
+def send(content, embeds):
+    payload = json.dumps({"content": content, "embeds": embeds}).encode()
+    req = urllib.request.Request(
+        DISCORD_WEBHOOK,
+        data=payload,
+        headers={
+            "Content-Type": "application/json",
+            "User-Agent": "are-we-up/1.0",
+        },
+        method="POST",
+    )
+    try:
+        resp = urllib.request.urlopen(req)
+        print(f"Discord webhook sent OK: {resp.status}", file=sys.stderr)
+    except urllib.error.HTTPError as e:
+        body = e.read().decode()
+        print(f"Discord webhook error: {e.code} {body}", file=sys.stderr)
+    except Exception as e:
+        print(f"Discord webhook error: {e}", file=sys.stderr)
 
 
 class Handler(BaseHTTPRequestHandler):
@@ -44,26 +67,14 @@ class Handler(BaseHTTPRequestHandler):
             })
 
         if embeds:
-            has_firing = any(a.get("status") == "firing" for a in body.get("alerts", []))
-            mention = f"<@{DISCORD_MENTION_USER_ID}>" if DISCORD_MENTION_USER_ID and has_firing else ""
-            payload = json.dumps({"content": mention, "embeds": embeds}).encode()
-            req = urllib.request.Request(
-                DISCORD_WEBHOOK,
-                data=payload,
-                headers={
-                    "Content-Type": "application/json",
-                    "User-Agent": "are-we-up/1.0",
-                },
-                method="POST",
+            # Only critical alerts ping; warnings are posted without a mention.
+            has_critical = any(
+                a.get("status") == "firing" and a.get("labels", {}).get("severity") == "critical"
+                for a in body.get("alerts", [])
             )
-            try:
-                resp = urllib.request.urlopen(req)
-                print(f"Discord webhook sent OK: {resp.status}", file=sys.stderr)
-            except urllib.error.HTTPError as e:
-                body = e.read().decode()
-                print(f"Discord webhook error: {e.code} {body}", file=sys.stderr)
-            except Exception as e:
-                print(f"Discord webhook error: {e}", file=sys.stderr)
+            mention = f"<@{DISCORD_MENTION_USER_ID}>" if DISCORD_MENTION_USER_ID and has_critical else ""
+            for i in range(0, len(embeds), MAX_EMBEDS):
+                send(mention if i == 0 else "", embeds[i:i + MAX_EMBEDS])
 
         self.send_response(200)
         self.end_headers()

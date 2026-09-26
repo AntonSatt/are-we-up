@@ -10,6 +10,7 @@ services:
       - ./prometheus/alert-rules.yml:/etc/prometheus/alert-rules.yml:ro
       - ./targets.yml:/etc/prometheus/targets.yml:ro
       - ./targets.d:/etc/prometheus/targets.d:ro
+      - ./rules.d:/etc/prometheus/rules.d:ro
       - prometheus-data:/prometheus
     command:
       - "--config.file=/etc/prometheus/prometheus.yml"

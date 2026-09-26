@@ -4,6 +4,8 @@ global:
 
 rule_files:
   - alert-rules.yml
+  # Private alert tiers (gitignored), see rules.d/private.yml.example
+  - rules.d/*.yml
 
 alerting:
   alertmanagers:

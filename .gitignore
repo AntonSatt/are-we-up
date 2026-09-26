@@ -4,3 +4,6 @@ prometheus-data/
 
 # Private probe targets (internal addresses); only the example is tracked
 targets.d/*.yml
+
+# Alert tiers for the private targets; only the example is tracked
+rules.d/*.yml

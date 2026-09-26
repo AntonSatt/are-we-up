@@ -1,0 +1,19 @@
+# Alert tiers for private targets: copy to rules.d/private.yml (any *.yml here
+# is loaded). Real *.yml files in this directory are gitignored, like
+# targets.d/, so home-lab service names stay out of a public repo.
+#
+# instance is the target's name label. Tiers work as in alert-rules.yml:
+#   "page"  critical: Discord with a mention
+#   (none)  warning: Discord without a mention (the default, no entry needed)
+#   "off"   no alerts, dashboards only
+# Quote the values: YAML reads a bare off as false.
+
+groups:
+  - name: alert-tiers-private
+    rules:
+      - record: alert_tier
+        expr: vector(1)
+        labels: {instance: "Media server", tier: "page"}
+      - record: alert_tier
+        expr: vector(1)
+        labels: {instance: "Cluster Grafana", tier: "off"}

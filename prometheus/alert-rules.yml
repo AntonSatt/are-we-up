@@ -1,11 +1,34 @@
 groups:
   # =========================================================================
+  # Alert tiers
+  # How loud a target's alerts are, keyed on its name (the instance label).
+  # Kept out of the target labels on purpose: a changed label starts new
+  # series and resets the SLA history.
+  #   "page"  critical: Discord with a mention
+  #   (none)  warning: Discord without a mention (the default)
+  #   "off"   no alerts, dashboards only
+  # Quote the tier values: YAML reads a bare off as false. Tiers for private
+  # targets go in rules.d/*.yml (gitignored), see rules.d/private.yml.example.
+  # =========================================================================
+  - name: alert-tiers
+    rules:
+      - record: alert_tier
+        expr: vector(1)
+        labels: {instance: "Anton-website", tier: "page"}
+      - record: alert_tier
+        expr: vector(1)
+        labels: {instance: "Carbonshift", tier: "page"}
+      - record: alert_tier
+        expr: vector(1)
+        labels: {instance: "SHH-Radar", tier: "page"}
+
+  # =========================================================================
   # Probe / Uptime Alerts
   # =========================================================================
   - name: probe-alerts
     rules:
       - alert: TargetDown
-        expr: probe_success == 0
+        expr: probe_success == 0 and on(instance) alert_tier{tier="page"}
         for: 2m
         labels:
           severity: critical
@@ -13,8 +36,17 @@ groups:
           summary: "{{ $labels.instance }} is DOWN"
           description: "{{ $labels.instance }} has been unreachable for more than 2 minutes."
 
+      - alert: TargetDown
+        expr: probe_success == 0 unless on(instance) alert_tier{tier=~"page|off"}
+        for: 2m
+        labels:
+          severity: warning
+        annotations:
+          summary: "{{ $labels.instance }} is DOWN"
+          description: "{{ $labels.instance }} has been unreachable for more than 2 minutes."
+
       - alert: HighResponseTime
-        expr: probe_duration_seconds > 3
+        expr: probe_duration_seconds > 3 unless on(instance) alert_tier{tier="off"}
         for: 5m
         labels:
           severity: warning
@@ -23,7 +55,7 @@ groups:
           description: "{{ $labels.instance }} response time is {{ $value | humanizeDuration }} (threshold: 3s)."
 
       - alert: SSLCertExpiringSoon
-        expr: (probe_ssl_earliest_cert_expiry - time()) / 86400 < 14
+        expr: (probe_ssl_earliest_cert_expiry - time()) / 86400 < 14 unless on(instance) alert_tier{tier="off"}
         for: 1h
         labels:
           severity: warning
@@ -31,8 +63,9 @@ groups:
           summary: "SSL cert for {{ $labels.instance }} expires in {{ $value | humanize }} days"
           description: "The SSL certificate for {{ $labels.instance }} will expire in less than 14 days."
 
+      # Only paging targets escalate; the rest keep SSLCertExpiringSoon firing.
       - alert: SSLCertExpiryCritical
-        expr: (probe_ssl_earliest_cert_expiry - time()) / 86400 < 3
+        expr: (probe_ssl_earliest_cert_expiry - time()) / 86400 < 3 and on(instance) alert_tier{tier="page"}
         for: 1h
         labels:
           severity: critical
@@ -44,8 +77,11 @@ groups:
       # expected answer, so that code is not a change for them.
       - alert: HTTPStatusCodeChange
         expr: |
-          (probe_http_status_code != 200 and probe_success == 1)
-            unless probe_http_status_code{module=~"http_auth.*"} == 401
+          (
+            (probe_http_status_code != 200 and probe_success == 1)
+              unless probe_http_status_code{module=~"http_auth.*"} == 401
+          )
+            unless on(instance) alert_tier{tier="off"}
         for: 5m
         labels:
           severity: warning
