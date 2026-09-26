@@ -40,8 +40,12 @@ groups:
           summary: "SSL cert for {{ $labels.instance }} expires in {{ $value | humanize }} days"
           description: "The SSL certificate for {{ $labels.instance }} will expire in less than 3 days."
 
+      # Targets behind basic auth use an http_auth_* module where 401 is the
+      # expected answer, so that code is not a change for them.
       - alert: HTTPStatusCodeChange
-        expr: probe_http_status_code != 200 and probe_success == 1
+        expr: |
+          (probe_http_status_code != 200 and probe_success == 1)
+            unless probe_http_status_code{module=~"http_auth.*"} == 401
         for: 5m
         labels:
           severity: warning
