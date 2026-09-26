@@ -24,31 +24,29 @@
   labels:
     name: Carbonshift
     module: http_2xx
+    slo: "99.9"
 
 - targets:
     - https://ssh-radar.antonsatt.com
   labels:
     name: SHH-Radar
     module: http_2xx
-
-- targets:
-    - https://mindspace.antonsatt.com/
-  labels:
-    name: Mindspace
-    module: http_2xx
+    slo: "99.9"
 
 - targets:
     - https://antonsatt.com
   labels:
     name: Anton-website
     module: http_2xx
-    slo: "99.95"
+    slo: "99.9"
 
 - targets:
-    - https://btcpay.antonsatt.com/
+    - https://git.antonsatt.com/
   labels:
-    name: btcpay-antonsatt
+    name: GitLab
     module: http_2xx
+    slo: "99"
+
 
 # --- TCP Services ---
 # - targets:
