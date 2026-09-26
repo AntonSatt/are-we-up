@@ -1,7 +1,7 @@
 # are-we-up
 
 <p align="center">
-  <img src="assets/are-we-up.png" alt="Uptime Overview Dashboard" width="600">
+  <img src="assets/are-we-up.png" alt="Uptime Overview Dashboard" width="800">
 </p>
 
 Self-hostable uptime monitoring stack. Define your targets in one YAML file, run `docker compose up`, and get dashboards with alerting out of the box.
