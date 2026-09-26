@@ -5,7 +5,7 @@ global:
 rule_files:
   - alert-rules.yml
   # Private alert tiers (gitignored), see rules.d/private.yml.example
-  - rules.d/*.yml
+  - /etc/are-we-up/rules.d/*.yml
 
 alerting:
   alertmanagers:
@@ -51,7 +51,7 @@ scrape_configs:
     metrics_path: /probe
     file_sd_configs:
       - files:
-          - /etc/prometheus/targets.d/*.yml
+          - /etc/are-we-up/targets.d/*.yml
         refresh_interval: 30s
     relabel_configs:
       - source_labels: [module]

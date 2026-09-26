@@ -5,15 +5,17 @@ services:
     restart: unless-stopped
     ports:
       - "${PROMETHEUS_PORT:-9090}:9090"
+    # Config is mounted as directories, not single files: git and most editors
+    # replace a file on save, and a single-file bind mount keeps showing the old
+    # one. With directories, auto-reload picks up changes without a restart.
     volumes:
-      - ./prometheus/prometheus.yml:/etc/prometheus/prometheus.yml:ro
-      - ./prometheus/alert-rules.yml:/etc/prometheus/alert-rules.yml:ro
-      - ./targets.yml:/etc/prometheus/targets.yml:ro
-      - ./targets.d:/etc/prometheus/targets.d:ro
-      - ./rules.d:/etc/prometheus/rules.d:ro
+      - ./prometheus:/etc/prometheus:ro
+      - ./targets.d:/etc/are-we-up/targets.d:ro
+      - ./rules.d:/etc/are-we-up/rules.d:ro
       - prometheus-data:/prometheus
     command:
       - "--config.file=/etc/prometheus/prometheus.yml"
+      - "--config.auto-reload"
       - "--storage.tsdb.retention.time=${PROMETHEUS_RETENTION:-400d}"
       - "--web.enable-lifecycle"
     networks:
@@ -44,10 +46,9 @@ services:
     restart: unless-stopped
     ports:
       - "${ALERTMANAGER_PORT:-9093}:9093"
+    # No auto-reload in Alertmanager: after a change, POST /-/reload on :9093.
     volumes:
-      - ./alertmanager/alertmanager.yml.tmpl:/etc/alertmanager/alertmanager.yml.tmpl:ro
-      - ./alertmanager/entrypoint.sh:/entrypoint.sh:ro
-    entrypoint: ["/bin/sh", "/entrypoint.sh"]
+      - ./alertmanager:/etc/alertmanager:ro
     command:
       - "--config.file=/etc/alertmanager/alertmanager.yml"
     environment:
@@ -81,9 +82,10 @@ services:
     ports:
       - "${BLACKBOX_PORT:-9115}:9115"
     volumes:
-      - ./blackbox-exporter/blackbox.yml:/config/blackbox.yml:ro
+      - ./blackbox-exporter:/config:ro
     command:
       - "--config.file=/config/blackbox.yml"
+      - "--config.enable-auto-reload"
     networks:
       - monitoring
 

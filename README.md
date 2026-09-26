@@ -20,7 +20,7 @@ cp .env.example .env
 # Edit .env with your notification credentials
 
 # 3. Add your targets
-# Edit targets.yml — add the sites and services you want to monitor
+# Edit prometheus/targets.yml — add the sites and services you want to monitor
 
 # 4. Start the stack
 docker compose up -d --build
@@ -43,7 +43,7 @@ All ports are configurable via `.env`.
 
 ## Adding Targets
 
-Edit `targets.yml` to add or remove monitoring targets. Prometheus picks up changes automatically within 30 seconds — no restart needed.
+Edit `prometheus/targets.yml` to add or remove monitoring targets. Prometheus picks up changes automatically within 30 seconds — no restart needed.
 
 ### HTTP/HTTPS Sites
 
@@ -78,7 +78,7 @@ Edit `targets.yml` to add or remove monitoring targets. Prometheus picks up chan
 ### Private Targets
 
 Targets on a LAN or tailnet shouldn't end up in a public repo. Put them in
-`targets.d/*.yml` instead (same format as `targets.yml`): every real file in
+`targets.d/*.yml` instead (same format as `prometheus/targets.yml`): every real file in
 that directory is gitignored, only `targets.d/private.yml.example` is tracked.
 They are scraped as job `blackbox-private`, and the **Scope** picker in the
 Uptime Overview switches between *All*, *Public* and *Private*.
@@ -170,7 +170,7 @@ Configure in `.env`:
 
 **Discord** — set `DISCORD_WEBHOOK_URL`. Alerts are sent via a built-in bridge service that translates Alertmanager alerts into Discord embeds. Optionally set `DISCORD_MENTION_USER_ID` to get pinged on firing critical alerts (enable Developer Mode in Discord, right-click your name, Copy User ID).
 
-To add other notification channels, edit `alertmanager/alertmanager.yml.tmpl` and add the corresponding receivers (Slack, email, generic webhook, etc). See the [Alertmanager documentation](https://prometheus.io/docs/alerting/latest/configuration/) for receiver configuration.
+To add other notification channels, edit `alertmanager/alertmanager.yml` and add the corresponding receivers (Slack, email, generic webhook, etc). See the [Alertmanager documentation](https://prometheus.io/docs/alerting/latest/configuration/) for receiver configuration.
 
 ## Configuration Reference
 
@@ -196,15 +196,14 @@ To add other notification channels, edit `alertmanager/alertmanager.yml.tmpl` an
 are-we-up/
 ├── docker-compose.yml           # Stack orchestration
 ├── .env.example                 # Environment variable template
-├── targets.yml                  # Your monitoring targets (public)
 ├── targets.d/                   # Private targets, gitignored (*.yml)
 ├── rules.d/                     # Private alert tiers, gitignored (*.yml)
 ├── prometheus/
+│   ├── targets.yml              # Your monitoring targets (public)
 │   ├── prometheus.yml           # Prometheus configuration
 │   └── alert-rules.yml          # Alerting rules
 ├── alertmanager/
-│   ├── alertmanager.yml.tmpl    # Notification routing template
-│   └── entrypoint.sh            # Config preprocessor
+│   └── alertmanager.yml         # Notification routing
 ├── discord-bridge/
 │   ├── bridge.py                # Alertmanager-to-Discord translator
 │   └── Dockerfile
@@ -214,6 +213,19 @@ are-we-up/
     ├── provisioning/            # Auto-provisioning configs
     └── dashboards/              # JSON dashboard definitions
 ```
+
+## Applying Config Changes
+
+Config directories are mounted, not single files, so edits and `git pull` show
+up inside the containers right away. Prometheus (targets, rules, config) and the
+Blackbox Exporter reload on their own within 30 seconds. Alertmanager has no
+auto-reload, so tell it after changing `alertmanager/alertmanager.yml`:
+
+```bash
+curl -X POST http://localhost:9093/-/reload
+```
+
+Only changes to `docker-compose.yml` itself need `docker compose up -d`.
 
 ## Versions and Upgrades
 
