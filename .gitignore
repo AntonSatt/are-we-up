@@ -1,3 +1,6 @@
 .env
 grafana-data/
 prometheus-data/
+
+# Private probe targets (internal addresses); only the example is tracked
+targets.d/*.yml

@@ -16,6 +16,10 @@
 #               Surfaces in the SLA / Reliability dashboard.
 #
 # Examples are provided below. Uncomment or add your own.
+#
+# Private targets (LAN or tailnet addresses) go in targets.d/*.yml instead: that
+# directory is gitignored, scraped as job "blackbox-private", and shows up under
+# "Private" in the Uptime Overview. See targets.d/private.yml.example.
 # =============================================================================
 
 # --- HTTP/HTTPS Sites ---
@@ -47,6 +51,27 @@
     module: http_2xx
     slo: "99"
 
+
+- targets:
+    - https://mattermost.antonsatt.com/api/v4/system/ping
+  labels:
+    name: Mattermost
+    module: http_2xx
+    slo: "99.9"
+
+- targets:
+    - https://argocd.antonsatt.com/healthz
+  labels:
+    name: ArgoCD Oracle
+    module: http_2xx
+    slo: "99.9"
+
+- targets:
+    - https://buzz.antonsatt.com
+  labels:
+    name: Buzz Relay
+    module: http_2xx
+    slo: "99.9"
 
 # --- TCP Services ---
 # - targets:

@@ -1,0 +1,21 @@
+# Private targets: copy to targets.d/private.yml (any *.yml here is loaded).
+# Real *.yml files in this directory are gitignored, so internal addresses
+# never end up in a public repo. Same format as targets.yml; scraped as job
+# "blackbox-private". A lower SLO usually fits home-lab services better.
+#
+# Modules: http_2xx (valid TLS), http_2xx_no_tls (self-signed or plain HTTP),
+#          http_auth_no_tls (behind basic auth: 401 counts as up).
+
+- targets:
+    - http://192.0.2.10:8096/health
+  labels:
+    name: Media server
+    module: http_2xx
+    slo: "99"
+
+- targets:
+    - https://grafana.example.lan/api/health
+  labels:
+    name: Cluster Grafana
+    module: http_2xx_no_tls
+    slo: "99"

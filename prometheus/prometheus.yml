@@ -43,6 +43,27 @@ scrape_configs:
       - target_label: __address__
         replacement: blackbox-exporter:9115
 
+  # --- Blackbox HTTP probes for private targets (targets.d/*.yml, gitignored) ---
+  # Kept in a separate job so dashboards can filter public vs private services.
+  - job_name: blackbox-private
+    metrics_path: /probe
+    file_sd_configs:
+      - files:
+          - /etc/prometheus/targets.d/*.yml
+        refresh_interval: 30s
+    relabel_configs:
+      - source_labels: [module]
+        regex: http_.*
+        action: keep
+      - source_labels: [__address__]
+        target_label: __param_target
+      - source_labels: [module]
+        target_label: __param_module
+      - source_labels: [name]
+        target_label: instance
+      - target_label: __address__
+        replacement: blackbox-exporter:9115
+
   # --- Blackbox TCP probes (from targets.yml) ---
   - job_name: blackbox-tcp
     metrics_path: /probe

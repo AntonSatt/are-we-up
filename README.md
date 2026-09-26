@@ -75,12 +75,25 @@ Edit `targets.yml` to add or remove monitoring targets. Prometheus picks up chan
     module: icmp
 ```
 
+### Private Targets
+
+Targets on a LAN or tailnet shouldn't end up in a public repo. Put them in
+`targets.d/*.yml` instead (same format as `targets.yml`): every real file in
+that directory is gitignored, only `targets.d/private.yml.example` is tracked.
+They are scraped as job `blackbox-private`, and the **Scope** picker in the
+Uptime Overview switches between *All*, *Public* and *Private*.
+
+```bash
+cp targets.d/private.yml.example targets.d/private.yml   # then edit
+```
+
 ### Available Modules
 
 | Module           | Description                              |
 |------------------|------------------------------------------|
 | `http_2xx`       | HTTPS probe with TLS validation          |
 | `http_2xx_no_tls`| HTTP probe, skips TLS verification       |
+| `http_auth_no_tls`| Like `http_2xx_no_tls`, but 401 counts as up (service behind basic auth) |
 | `tcp_connect`    | TCP connection check                     |
 | `icmp`           | ICMP ping (requires container privileges)|
 
@@ -103,7 +116,7 @@ Supported values: `"99"`, `"99.9"` (default if omitted), `"99.95"`, `"99.99"`. O
 
 Six pre-built dashboards are provisioned automatically:
 
-- **Uptime Overview** — all targets at a glance: status, response time, uptime history, SSL cert expiry
+- **Uptime Overview** — headline numbers, a status tile per service, an availability timeline (red where a probe failed) and an SLA table with 30-day MET/MISSED, error budget and cert days; filter by *All / Public / Private*
 - **SLA / Reliability** — uptime % across 24h/30d/1y windows, error budget remaining (per-target), status timeline, downtime summary
 - **Site Detail** — per-site deep-dive with response time breakdown (DNS, TCP, TLS, processing, transfer), status code history, SSL countdown
 - **System Overview** — CPU, memory, disk, network from Node Exporter
@@ -159,7 +172,8 @@ To add other notification channels, edit `alertmanager/alertmanager.yml.tmpl` an
 are-we-up/
 ├── docker-compose.yml           # Stack orchestration
 ├── .env.example                 # Environment variable template
-├── targets.yml                  # Your monitoring targets
+├── targets.yml                  # Your monitoring targets (public)
+├── targets.d/                   # Private targets, gitignored (*.yml)
 ├── prometheus/
 │   ├── prometheus.yml           # Prometheus configuration
 │   └── alert-rules.yml          # Alerting rules
@@ -175,6 +189,24 @@ are-we-up/
     ├── provisioning/            # Auto-provisioning configs
     └── dashboards/              # JSON dashboard definitions
 ```
+
+## Versions and Upgrades
+
+Every image is pinned to an exact version in `docker-compose.yml`, so a
+`docker compose pull` never jumps a major version by surprise. To upgrade, bump
+the tag, back up the volumes, then pull and recreate:
+
+```bash
+docker compose stop prometheus grafana
+docker run --rm -v are-we-up_prometheus-data:/src:ro -v "$PWD":/dst alpine \
+  tar czf /dst/prometheus-data.tgz -C /src .
+docker run --rm -v are-we-up_grafana-data:/src:ro -v "$PWD":/dst alpine \
+  tar czf /dst/grafana-data.tgz -C /src .
+docker compose pull && docker compose up -d
+```
+
+Grafana migrates its database on a major upgrade and cannot go back, so the
+Grafana backup is the rollback path.
 
 ## Stopping
 
