@@ -218,7 +218,8 @@ are-we-up/
 
 Config directories are mounted, not single files, so edits and `git pull` show
 up inside the containers right away. Prometheus (targets, rules, config) and the
-Blackbox Exporter reload on their own within 30 seconds. Alertmanager has no
+Blackbox Exporter check for changes every 30 seconds and reload on their own,
+usually within a minute. Alertmanager has no
 auto-reload, so tell it after changing `alertmanager/alertmanager.yml`:
 
 ```bash
