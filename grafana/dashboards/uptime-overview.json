@@ -530,7 +530,11 @@
         "justifyMode": "center",
         "orientation": "auto",
         "wideLayout": true,
-        "showPercentChange": false
+        "showPercentChange": false,
+        "text": {
+          "titleSize": 14,
+          "valueSize": 26
+        }
       }
     },
     {
@@ -763,15 +767,24 @@
       ],
       "transformations": [
         {
-          "id": "merge",
-          "options": {}
+          "id": "filterFieldsByName",
+          "options": {
+            "include": {
+              "pattern": "^(instance|Value #.*)$"
+            }
+          }
+        },
+        {
+          "id": "joinByField",
+          "options": {
+            "byField": "instance",
+            "mode": "outer"
+          }
         },
         {
           "id": "organize",
           "options": {
-            "excludeByName": {
-              "Time": true
-            },
+            "excludeByName": {},
             "indexByName": {
               "instance": 0,
               "Value #B": 1,
