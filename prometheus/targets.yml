@@ -66,13 +66,6 @@
     module: http_2xx
     slo: "99.9"
 
-- targets:
-    - https://buzz.antonsatt.com
-  labels:
-    name: Buzz Relay
-    module: http_2xx
-    slo: "99.9"
-
 # --- TCP Services ---
 # - targets:
 #     - your-db-host:5432
