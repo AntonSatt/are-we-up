@@ -76,7 +76,7 @@ services:
       - monitoring
 
   blackbox-exporter:
-    image: prom/blackbox-exporter:v0.28.0
+    image: prom/blackbox-exporter:v0.29.1
     container_name: are-we-up-blackbox
     restart: unless-stopped
     ports:
